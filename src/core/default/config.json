@@ -1,0 +1,22 @@
+{
+  "rules": {
+    "keysOnViews": "error",
+    "zombieKeys": "warning",
+    "emptyKeys": "warning",
+    "misprint": {
+      "type": "warning",
+      "coefficient": 0.9
+    },
+    "ignoredKeys": [],
+    "ignoredMisprintKeys": []
+  },
+  "fetch": {
+    "requestQuery": "",
+    "requestHeaders": {},
+    "responseQuery": ""
+  },
+  "fixZombiesKeys": false,
+  "project": "./src/app/**/*.{html,ts}",
+  "languages": "./src/assets/i18n/*.json",
+  "frameworkPreset": "angular-ngx-translate"
+}
