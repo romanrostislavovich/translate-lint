@@ -16,6 +16,8 @@ import {
     ToggleRule,
 } from '../../../src/core';
 
+import { ngxTranslateRegEx } from '../../../src/libraries/angular-ngx-translate';
+
 import { assertFullModel } from './results/arguments.full';
 import { assertAngular17Model } from './results/angular_17.full';
 import { assertDefaultModel } from './results/default.full';
@@ -23,17 +25,19 @@ import { assertCustomConfig } from './results/custom.config';
 import { configValues } from './results/config.values';
 import { getAbsolutePath, projectFolder, sortResult } from './utils';
 
-describe('Core Integration', () => {
-    const projectIgnorePath: string = './test/integration/inputs/views/pipe.keys.html';
-    const projectWithMaskPath: string = './test/integration/inputs/views/*.{html,ts}';
-    const projectAngular17Path: string = './test/integration/inputs/views/angular_17.html';
-    const projectAbsentMaskPath: string = './test/integration/inputs/views/';
+const defaultToolsRegEx: string[] = [...ngxTranslateRegEx];
 
-    const languagesIgnorePath: string = './test/integration/inputs/locales/EN-eu.json';
-    const languagesWithMaskPath: string = './test/integration/inputs/locales/EN-*.json';
-    const languagesAngular17Path: string = './test/integration/inputs/locales/angular_17.json';
-    const languagesIncorrectFile: string = './test/integration/inputs/locales/incorrect.json';
-    const languagesAbsentMaskPath: string = './test/integration/inputs/locales';
+describe('Core Integration', () => {
+    const projectIgnorePath: string = './test/integration/angular-ngx-translate/inputs/views/pipe.keys.html';
+    const projectWithMaskPath: string = './test/integration/angular-ngx-translate/inputs/views/*.{html,ts}';
+    const projectAngular17Path: string = './test/integration/angular-ngx-translate/inputs/views/angular_17.html';
+    const projectAbsentMaskPath: string = './test/integration/angular-ngx-translate/inputs/views/';
+
+    const languagesIgnorePath: string = './test/integration/angular-ngx-translate/inputs/locales/EN-eu.json';
+    const languagesWithMaskPath: string = './test/integration/angular-ngx-translate/inputs/locales/EN-*.json';
+    const languagesAngular17Path: string = './test/integration/angular-ngx-translate/inputs/locales/angular_17.json';
+    const languagesIncorrectFile: string = './test/integration/angular-ngx-translate/inputs/locales/incorrect.json';
+    const languagesAbsentMaskPath: string = './test/integration/angular-ngx-translate/inputs/locales';
 
     const ignorePath: string = '';
     const ignoreAngular17ViewPath: string = projectAngular17Path;
@@ -48,7 +52,7 @@ describe('Core Integration', () => {
            };
 
            // Act
-           const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath, undefined, errorConfig);
+           const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath, undefined, errorConfig, undefined, undefined, defaultToolsRegEx);
            const result: ResultCliModel = await model.lint();
 
            // Assert
@@ -62,7 +66,7 @@ describe('Core Integration', () => {
             const countEmptyKeys: number = 1;
             const errorType: ErrorTypes = ErrorTypes.warning;
             // Act
-            const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath);
+            const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath, undefined, undefined, undefined, undefined, defaultToolsRegEx);
             const result: ResultCliModel = await model.lint();
 
             // Assert
@@ -80,7 +84,7 @@ describe('Core Integration', () => {
                 emptyKeys: ErrorTypes.error,
             };
             // Act
-            const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath, undefined, errorConfig);
+            const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath, undefined, errorConfig, undefined, undefined, defaultToolsRegEx);
             const result: ResultCliModel = await model.lint();
 
             // Assert
@@ -96,7 +100,7 @@ describe('Core Integration', () => {
             const countMisprint: number = 0;
 
             // Act
-            const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath);
+            const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath, undefined, undefined, undefined, undefined, defaultToolsRegEx);
             const result: ResultCliModel = await model.lint();
 
             // Assert
@@ -133,7 +137,7 @@ describe('Core Integration', () => {
             );
 
             // Act
-            const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath,  '', errorConfig);
+            const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath,  '', errorConfig, undefined, undefined, defaultToolsRegEx);
             const result: ResultCliModel = await model.lint();
             const clearErrors: ResultErrorModel[] = result.errors.filter((error: ResultErrorModel) => error.errorFlow === ErrorFlow.misprintKeys);
 
@@ -152,7 +156,7 @@ describe('Core Integration', () => {
                 misprintKeys:  ErrorTypes.warning,
             };
             // Act
-            const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath, ignorePath, errorConfig);
+            const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath, ignorePath, errorConfig, undefined, undefined, defaultToolsRegEx);
             const result: ResultCliModel = await model.lint();
 
             // Assert
@@ -163,7 +167,7 @@ describe('Core Integration', () => {
     describe('Warnings', () => {
         it('should be 0 by default', async () => {
             // Act
-            const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath);
+            const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath, undefined, undefined, undefined, undefined, defaultToolsRegEx);
             const result:  ResultCliModel = await model.lint();
 
             // Assert
@@ -188,7 +192,7 @@ describe('Core Integration', () => {
             };
 
             // Act
-            const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath, ignorePath, errorConfig);
+            const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath, ignorePath, errorConfig, undefined, undefined, defaultToolsRegEx);
             const result:  ResultCliModel = await model.lint(maxWarnings);
 
             // Assert
@@ -201,7 +205,7 @@ describe('Core Integration', () => {
             const ifFullOfWarning: boolean = false;
 
             // Act
-            const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath);
+            const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath, undefined, undefined, undefined, undefined, defaultToolsRegEx);
             const result: ResultCliModel =  await model.lint(maxWarnings);
 
             // Assert
@@ -221,7 +225,7 @@ describe('Core Integration', () => {
             };
 
             // Act
-            const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath, ignorePath, errorConfig);
+            const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath, ignorePath, errorConfig, undefined, undefined, defaultToolsRegEx);
             const result: ResultCliModel = await model.lint();
 
             // Assert
@@ -233,7 +237,7 @@ describe('Core Integration', () => {
             const ignorePath: string = `null, 0, undefined, '',`;
 
             // Act
-            const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath, ignorePath);
+            const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath, ignorePath, undefined, undefined, undefined, defaultToolsRegEx);
             const result: ResultCliModel = await model.lint();
 
             // Assert
@@ -246,7 +250,7 @@ describe('Core Integration', () => {
             const absolutePathProject: string = path.resolve(__dirname, process.cwd(), projectWithMaskPath);
 
             // Act
-            const model: TranslateLint = new TranslateLint(absolutePathProject, languagesWithMaskPath);
+            const model: TranslateLint = new TranslateLint(absolutePathProject, languagesWithMaskPath, undefined, undefined, undefined, undefined, defaultToolsRegEx);
             const result: ResultCliModel = await model.lint();
 
             // Assert
@@ -262,7 +266,7 @@ describe('Core Integration', () => {
                 misprintKeys: ErrorTypes.warning
             };
             // Act
-            const model: TranslateLint = new TranslateLint(projectAbsentMaskPath, languagesAbsentMaskPath, ignorePath, errorConfig);
+            const model: TranslateLint = new TranslateLint(projectAbsentMaskPath, languagesAbsentMaskPath, ignorePath, errorConfig, undefined, undefined, defaultToolsRegEx);
             const result: ResultCliModel = await model.lint();
 
             // Assert
@@ -308,7 +312,7 @@ describe('Core Integration', () => {
     describe('Config', () => {
         it('should be default', async () => {
             // Act
-            const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath);
+            const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath, undefined, undefined, undefined, undefined, defaultToolsRegEx);
             const result:  ResultCliModel = await model.lint();
 
             // Assert
@@ -349,7 +353,7 @@ describe('Core Integration', () => {
             };
 
             // Act
-            const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath, ignoreAngular17ViewPath, errorConfig);
+            const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath, ignoreAngular17ViewPath, errorConfig, undefined, undefined, defaultToolsRegEx);
             const result: ResultCliModel = await model.lint();
 
             // Assert
@@ -362,7 +366,7 @@ describe('Core Integration', () => {
                // Arrange
                const countOfLanguage: number = 2;
                // Act
-               const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath);
+               const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath, undefined, undefined, undefined, undefined, defaultToolsRegEx);
                const result: LanguagesModel[] = model.getLanguages();
 
                // Assert
@@ -374,7 +378,7 @@ describe('Core Integration', () => {
                 // Arrange
                  const countOfKeys: number = configValues.totalKeys;
                 // Act
-                const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath);
+                const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath, undefined, undefined, undefined, undefined, defaultToolsRegEx);
                 const result: KeyModelWithLanguages[] = model.getKeys();
 
                 // Assert
@@ -400,7 +404,7 @@ describe('Core Integration', () => {
         const ignorePath: string = `${languagesIgnorePath}, ${ignoreAbsoluteProjectPath}`;
 
         // Act
-        const model: TranslateLint = new TranslateLint(absolutePathProject, languagesAngular17Path, ignorePath, errorConfig);
+        const model: TranslateLint = new TranslateLint(absolutePathProject, languagesAngular17Path, ignorePath, errorConfig, undefined, undefined, defaultToolsRegEx);
         const result: ResultCliModel = await model.lint();
 
         // Assert
@@ -425,7 +429,7 @@ describe('Core Integration', () => {
         const ignorePath: string = `${languagesIgnorePath}, ${ignoreAbsoluteProjectPath}, ${ignoreAngular17LanguagesPath}, ${ignoreAngular17ViewPath}`;
 
         // Act
-        const model: TranslateLint = new TranslateLint(absolutePathProject, languagesWithMaskPath, ignorePath, errorConfig);
+        const model: TranslateLint = new TranslateLint(absolutePathProject, languagesWithMaskPath, ignorePath, errorConfig, undefined, undefined, defaultToolsRegEx);
         const result: ResultCliModel = await model.lint();
 
         // Assert

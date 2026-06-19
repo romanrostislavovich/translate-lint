@@ -1,0 +1,9 @@
+button:
+  save: Save
+  cancel: Cancel
+  delete: Delete
+errors:
+  required: This field is required
+  invalid: Invalid value
+greeting: Hello World
+empty_key: ""

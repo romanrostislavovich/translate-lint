@@ -12,7 +12,7 @@
     "customRegExpToFindKeys": [ "(?<=marker\\(['\"])([A-Za-z0-9_\\-.]+)(?=['\"]\\))"]
   },
   "fixZombiesKeys": false,
-  "project": "./test/integration/inputs/views/directive.keys.html",
-  "languages": "./test/integration/inputs/locales/EN-*.json",
-  "ignore": "./test/integration/inputs/locales/incorrect.json"
+  "project": "./test/integration/angular-ngx-translate/inputs/views/directive.keys.html",
+  "languages": "./test/integration/angular-ngx-translate/inputs/locales/EN-*.json",
+  "ignore": "./test/integration/angular-ngx-translate/inputs/locales/incorrect.json"
 }
