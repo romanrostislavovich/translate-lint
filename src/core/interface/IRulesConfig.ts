@@ -1,4 +1,5 @@
 import { ErrorTypes, ToggleRule } from './../enums';
+import { INamespaceRule } from './IAppConfig';
 
 interface IRulesConfig {
     emptyKeys: ErrorTypes;
@@ -11,6 +12,7 @@ interface IRulesConfig {
     ignoredKeys: string[];
     ignoredMisprintKeys: string[];
     customRegExpToFindKeys: string[] | RegExp[];
+    namespaceKeys?: INamespaceRule;
 }
 
 export { IRulesConfig };

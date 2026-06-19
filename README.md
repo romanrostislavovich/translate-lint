@@ -15,6 +15,8 @@
 - [Usage](#usage)
     - [CLI](#cli)
     - [TypeScript](#typescript)
+- [Rules](#rules)
+    - [namespaceKeys](#namespacekeysrule)
 - [Contribute](#contribute)
 - [Used By](#used-by)
 - [License](#license)
@@ -27,13 +29,16 @@ which should exist in all languages files.
 
 ### Support 
 
-| Library                                                      | Preset                  |
-|--------------------------------------------------------------|-------------------------|
-| [ngx-translate][ngx-translate]                               | `angular-ngx-translate` |
-| [react-i18next](https://www.npmjs.com/package/react-i18next) | `react-i18next`         |
-| [react-intl](https://www.npmjs.com/package/react-intl)       | `react-intl`            |
-| [lingui](https://github.com/lingui/js-lingui)                | `lingui-js`               |
-| [next-intl](https://www.npmjs.com/package/next-intl)                                                | `next-intl`             |
+| Library                                                          | Preset                  | Framework |
+|------------------------------------------------------------------|-------------------------|-----------|
+| [ngx-translate][ngx-translate]                                   | `angular-ngx-translate` | Angular   |
+| [react-i18next](https://www.npmjs.com/package/react-i18next)     | `react-i18next`         | React     |
+| [react-intl](https://www.npmjs.com/package/react-intl)           | `react-intl`            | React     |
+| [lingui](https://github.com/lingui/js-lingui)                    | `lingui-js`             | React     |
+| [next-intl](https://www.npmjs.com/package/next-intl)             | `next-intl`             | Next.js   |
+| [vue-i18n](https://vue-i18n.intlify.dev/)                        | `vue-i18n`              | Vue       |
+| [i18next-vue](https://www.npmjs.com/package/i18next-vue)         | `i18next-vue`           | Vue       |
+| [fluent-vue](https://fluent-vue.demivan.me/)                     | `fluent-vue`            | Vue       |
 
 ## Installation
 
@@ -56,7 +61,7 @@ Simple tools for checking translate keys in the whole app that uses regexp. Supp
 Options:
  -f, --frameworkPreset [enum] (required)   
           Preset of frameworks and libraries
-          Possible Values: <angular-ngx-translate|lingui-js|next-intl|react-intl|react-i18next>
+          Possible Values: <angular-ngx-translate|lingui-js|next-intl|react-intl|react-i18next|vue-i18n|i18next-vue|fluent-vue>
   -p, --project [glob]                   
           The path to project folder
           Possible Values: <relative path|absolute path>
@@ -64,7 +69,8 @@ Options:
   -l, --languages [glob]                 
           The path to languages folder
           Possible Values: <relative path|absolute path|URL>
-           (default: "./src/assets/i18n/*.json")
+          Supported formats: .json, .yaml, .yml
+           (default: "./src/assets/i18n/*.{json,yaml,yml}")
   --kv, --keysOnViews [enum]             
           Described how to handle the error of missing keys on view
           Possible Values: <disable|warning|error>
@@ -129,9 +135,16 @@ Default JSON Config is:
         "emptyKeys": "warning",
         "maxWarning": "0",
         "misprintCoefficient": "0.9",
-        "ignoredKeys": [ "IGNORED.KEY.(.*)" ], // can be string or RegExp
+        "ignoredKeys": [ "IGNORED.KEY.(.*)" ],
         "ignoredMisprintKeys": [],
-        "customRegExpToFindKeys": [ "(?<=marker\\(['\"])([A-Za-z0-9_\\-.]+)(?=['\"]\\))"], // to find: marker('TRSNLATE.KEY');
+        "customRegExpToFindKeys": [ "(?<=marker\\(['\"])([A-Za-z0-9_\\-.]+)(?=['\"]\\))"],
+        "namespaceKeys": {
+            "type": "disable",
+            "delimiter": ".",
+            "namespaces": {},
+            "globalNamespaces": [],
+            "ignoreInFolders": []
+        }
     },
     "fetch": {
         "requestQuery": "",
@@ -140,7 +153,7 @@ Default JSON Config is:
     },
     "fixZombiesKeys": false,
     "project": "./src/app/**/*.{html,ts}",
-    "languages": "./src/assets/i18n/*.json",
+    "languages": "./src/assets/i18n/*.{json,yaml,yml}",
     "frameworkPreset": "angular-ngx-translate"
 }
 ```
@@ -160,7 +173,17 @@ const config = {
             coefficient: 0.9
         },
         ignoredKeys: [],
-        ignoredMisprintKeys: []
+        ignoredMisprintKeys: [],
+        namespaceKeys: {
+            type: 'error',
+            delimiter: '.',       // use ':' for react-i18next (e.g. t('bonus:TITLE'))
+            namespaces: {
+                'bonus':      ['apps/bonus', 'apps/bonus-detail'],
+                'registration': ['apps/registration', 'apps/auth'],
+            },
+            globalNamespaces: ['g', 'form', 'nav', 'popup'],
+            ignoreInFolders: ['sandbox-component-kit'],
+        },
     },
     fetch: {
         requestQuery: "",
@@ -184,7 +207,7 @@ const config = {
     },
     fixZombiesKeys: false,
     project: "./src/app/**/*.{html,ts}",
-    languages: "./src/assets/i18n/*.json",
+    languages: "./src/assets/i18n/*.{json,yaml,yml}",
     frameworkPreset: "angular-ngx-translate"
 }
 
@@ -230,6 +253,7 @@ import {
   ToggleRule,
   TranslateLint,
   IRulesConfig,
+  INamespaceRule,
   ResultCliModel,
   ErrorTypes,
   LanguagesModel,
@@ -242,6 +266,18 @@ const libraryPreset: Libraries = Libraries.angularNgxTranslate;
 const viewsPath: string = './src/app/**/*.{html,ts}';
 const languagesPath: string = './src/assets/i18n/*.json';
 const ignoredLanguagesPath: string = "./src/assets/i18n/ru.json, ./src/assets/i18n/ru-RU.json";
+
+const namespaceRule: INamespaceRule = {
+  type: ErrorTypes.error,
+  delimiter: '.',
+  namespaces: {
+    'bonus': ['apps/bonus', 'apps/bonus-detail'],
+    'registration': ['apps/registration', 'apps/auth'],
+  },
+  globalNamespaces: ['g', 'form', 'nav', 'popup'],
+  ignoreInFolders: ['sandbox-component-kit'],
+};
+
 const ruleConfig: IRulesConfig = {
   keysOnViews: ErrorTypes.error,
   zombieKeys: ErrorTypes.warning,
@@ -250,10 +286,10 @@ const ruleConfig: IRulesConfig = {
   emptyKeys: ErrorTypes.warning,
   maxWarning: 0,
   misprintCoefficient: 0.9,
-  fixZombiesKeys: false,
-  ignoredKeys: ['EXAMPLE.KEY', 'IGNORED.KEY.(.*)'], // can be string or RegExp
+  ignoredKeys: ['EXAMPLE.KEY', 'IGNORED.KEY.(.*)'],
   ignoredMisprintKeys: [],
-  customRegExpToFindKeys: ["(?<=marker\\(['\"])([A-Za-z0-9_\\-.]+)(?=['\"]\\))"] // to find: marker('TRSNLATE.KEY');
+  customRegExpToFindKeys: ["(?<=marker\\(['\"])([A-Za-z0-9_\\-.]+)(?=['\"]\\))"],
+  namespaceKeys: namespaceRule,
 };
 const fixZombiesKeys: boolean = false;
 const fetchSettings: IFetch = {
@@ -270,6 +306,45 @@ const translateLint = new TranslateLint(viewsPath, languagesPath, ignoredLanguag
 const resultLint: ResultCliModel = translateLint.lint(); // Run Lint
 const languages: LanguagesModel[] = translateLint.getLanguages()  // Get Languages with all keys and views
 
+```
+
+## Rules
+
+### namespaceKeys
+
+The `namespaceKeys` rule enforces that translation keys belonging to a specific namespace are only used in the allowed project folders. This helps maintain feature boundaries in large monorepo or multi-module applications.
+
+**How it works:**
+
+1. A key like `bonus.TITLE` is split by `delimiter` (`.`) → namespace is `bonus`
+2. If `bonus` is in `globalNamespaces` → allowed everywhere, no error
+3. If the file is in any path from `ignoreInFolders` → skipped entirely
+4. If `bonus` is declared in `namespaces` → the view file must be inside one of the allowed folders
+5. If none of the allowed folders match → error or warning (based on `type`)
+
+**Config options:**
+
+| Option | Type | Description |
+|---|---|---|
+| `type` | `error` \| `warning` \| `disable` | Severity of the rule |
+| `delimiter` | `string` | Character separating namespace from key. Use `.` for most libraries, `:` for react-i18next |
+| `namespaces` | `Record<string, string[]>` | Map of namespace → list of allowed folder paths |
+| `globalNamespaces` | `string[]` | Namespaces allowed in any folder (e.g. shared UI keys) |
+| `ignoreInFolders` | `string[]` | Folder paths where namespace checks are skipped entirely |
+
+**Delimiter by library:**
+
+| Library | Delimiter | Example in template |
+|---|---|---|
+| ngx-translate | `.` | `'bonus.TITLE' \| translate` |
+| react-i18next | `:` | `t('bonus:TITLE')` |
+| react-intl | `.` | `<FormattedMessage id="bonus.TITLE" />` |
+| lingui | `.` | `` t`bonus.TITLE` `` |
+| next-intl | `.` | `t('bonus.TITLE')` |
+
+**Error message example:**
+```
+Key 'bonus.TITLE' is not allowed in 'apps/dashboard/component.html'. Allowed folders: apps/bonus, apps/bonus-detail
 ```
 
 ## Contribute

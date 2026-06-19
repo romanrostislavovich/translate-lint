@@ -1,3 +1,5 @@
+import * as path from 'node:path';
+import { load as yamlLoad } from 'js-yaml';
 import { KeyModel } from '../KeyModel';
 import { FileModel } from './FileModel';
 
@@ -18,6 +20,14 @@ class FileLanguageModel extends FileModel {
         this.isURL = isURL;
     }
 
+    private parseFileContent(fileData: string, filePath: string): object {
+        const ext: string = path.extname(filePath).toLowerCase();
+        if (ext === '.yaml' || ext === '.yml') {
+            return (yamlLoad(fileData) as object) || {};
+        }
+        return JSON.parse(fileData);
+    }
+
     public getKeys(): FileLanguageModel {
         if (this.isURL) {
             this.files = [this.path];
@@ -30,12 +40,12 @@ class FileLanguageModel extends FileModel {
             this.files = this.getNormalizeFiles();
             this.keys = this.parseKeys((fileData: string, filePath: string): KeyModel[] => {
                 try {
-                    const fileKeysNames: string[] = this.getLanguageKeys(JSON.parse(this.fileData || fileData));
+                    const fileKeysNames: string[] = this.getLanguageKeys(this.parseFileContent(this.fileData || fileData, filePath));
                     return fileKeysNames.map((key: string) => {
                         return new KeyModel(key, [], [filePath]);
                     });
                 } catch (e) {
-                    throw new Error(`Can't parse JSON file: ${filePath}`);
+                    throw new Error(`Can't parse file: ${filePath}`);
                 }
             });
             return this;
@@ -55,13 +65,13 @@ class FileLanguageModel extends FileModel {
             this.files = this.getNormalizeFiles();
             this.keys = this.parseKeysWithValues((fileData: string, filePath: string): KeyModel[] => {
                 try {
-                    const fileKeysNames: KeyModel[] = this.getLanguageKeysWithValue(JSON.parse(this.fileData || fileData));
+                    const fileKeysNames: KeyModel[] = this.getLanguageKeysWithValue(this.parseFileContent(this.fileData || fileData, filePath));
                     return fileKeysNames.map((key: KeyModel) => {
                         key.languages.push(filePath);
                         return key;
                     });
                 } catch (e) {
-                    throw new Error(`Can't parse JSON file: ${filePath}`);
+                    throw new Error(`Can't parse file: ${filePath}`);
                 }
             });
             return this;

@@ -11,6 +11,7 @@ enum ErrorFlow {
     keysOnViews = 'keysOnViews',
     misprintKeys = 'misprintKeys',
     misprintCoefficient = 'misprintCoefficient',
+    namespaceKeys = 'namespaceKeys',
 }
 
 export { ErrorFlow };

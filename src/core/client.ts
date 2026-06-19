@@ -4,7 +4,7 @@ import { ErrorFlow, ErrorTypes } from './enums';
 import { IFetch, IRulesConfig } from './interface';
 import { KeysUtils, parseJsonFile, saveJsonFile } from './utils';
 import { FileLanguageModel, FileViewModel, KeyModel, LanguagesModel, ResultCliModel, ResultErrorModel } from './models';
-import { AbsentViewKeysRule, EmptyKeysRule, MisprintRule, ZombieRule } from './rules';
+import { AbsentViewKeysRule, EmptyKeysRule, MisprintRule, NamespaceRule, ZombieRule } from './rules';
 import { KeyModelWithLanguages, LanguagesModelWithKey, ViewModelWithKey } from './models/KeyModelWithLanguages';
 import { Http } from './utils/http';
 
@@ -185,6 +185,11 @@ class TranslateLint {
         if (rules.emptyKeys !== ErrorTypes.disable) {
             const ruleInstance: EmptyKeysRule = new EmptyKeysRule(this.rules.emptyKeys);
             result.push(...ruleInstance.check(languagesKeys.keys));
+        }
+
+        if (!!rules.namespaceKeys && rules.namespaceKeys?.type !== ErrorTypes.disable) {
+            const ruleInstance: NamespaceRule = new NamespaceRule(rules.namespaceKeys);
+            result.push(...ruleInstance.check(views.keys, languagesKeys.keys));
         }
 
         if (String(this.fixZombiesKeys).toLowerCase() === 'true') {

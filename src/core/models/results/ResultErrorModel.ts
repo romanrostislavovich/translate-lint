@@ -46,6 +46,11 @@ class ResultErrorModel implements IValidationMessage  {
             case ErrorFlow.emptyKeys:
                 message = `Key: '${this.value}' is empty in ${this.currentPath}`;
                 break;
+            case ErrorFlow.namespaceKeys:
+                message = isArray(this.absentedPath)
+                    ? `Key '${this.value}' is not allowed in '${this.currentPath}'. Allowed folders: ${this.absentedPath.join(', ')}`
+                    : `Key '${this.value}' is not allowed in '${this.currentPath}'`;
+                break;
             default:
                 message = 'Unknown error please write to the author';
                 break;

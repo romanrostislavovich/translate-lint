@@ -8,7 +8,14 @@
       "coefficient": 0.9
     },
     "ignoredKeys": [],
-    "ignoredMisprintKeys": []
+    "ignoredMisprintKeys": [],
+    "namespaceKeys": {
+      "type": "disable",
+      "delimiter": ".",
+      "namespaces": {},
+      "globalNamespaces": [],
+      "ignoreInFolders": []
+    }
   },
   "fetch": {
     "requestQuery": "",
@@ -17,6 +24,6 @@
   },
   "fixZombiesKeys": false,
   "project": "./src/app/**/*.{html,ts}",
-  "languages": "./src/assets/i18n/*.json",
+  "languages": "./src/assets/i18n/*.{json,yaml,yml}",
   "frameworkPreset": "angular-ngx-translate"
 }

@@ -22,7 +22,7 @@ const config: IAppConfig = {
             responseQuery: ""
         },
         project: './src/app/**/*.{html,ts,resx}',
-        languages: './src/assets/i18n/*.json',
+        languages: './src/assets/i18n/*.{json,yaml,yml}',
         frameworkPreset: Libraries.AngularNgxTranslate,
         fixZombiesKeys: false,
     }

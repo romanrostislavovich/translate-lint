@@ -12,7 +12,7 @@ class PathUtils {
     public static getNormalizeFiles(folder: string, ignores: string[] = []): string[] {
         const globPath: string = PathUtils.resolvePath(folder);
         const correctFilesPathList: string[] = dirGlob.sync(globPath, {
-            extensions: [ 'html', 'ts', 'json']
+            extensions: [ 'html', 'ts', 'json', 'yaml', 'yml']
         }).map((path) => {
             if (os.platform().includes('win')) {
                 return path.replaceAll('\\', '/');

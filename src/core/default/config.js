@@ -9,7 +9,17 @@ const config = {
             "coefficient": 0.9
         },
         ignoredKeys: [],
-        ignoredMisprintKeys: []
+        ignoredMisprintKeys: [],
+        namespaceKeys: {
+            type: 'disable',
+            delimiter: '.',          // use ':' for react-i18next
+            namespaces: {
+                'bonus':      ['apps/bonus', 'apps/bonus-detail'],
+                'registration': ['apps/registration', 'apps/auth'],
+            },
+            globalNamespaces: ['g', 'form', 'nav', 'popup'],
+            ignoreInFolders: ['component-kit'],
+        },
     },
     fetch: {
         requestQuery: "",
@@ -29,7 +39,7 @@ const config = {
     },
     fixZombiesKeys: false,
     project: "./src/app/**/*.{html,ts}",
-    languages: "./src/assets/i18n/*.json",
+    languages: "./src/assets/i18n/*.{json,yaml,yml}",
     frameworkPreset: "angular-ngx-translate",
 }
 
