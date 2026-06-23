@@ -33,7 +33,7 @@ const docs: any = {
 Examples:
 
     $ ${name} -p '${config.defaultValues.project}' -l '${config.defaultValues.languages}' -f angular-ngx-translate
-    $ ${name} -p '${config.defaultValues.project}' -z ${ErrorTypes.disable} -v ${ErrorTypes.error} -f react-i18next
+    $ ${name} -p '${config.defaultValues.project}' -zk ${ErrorTypes.disable} -kv ${ErrorTypes.error} -f react-i18next
     $ ${name} -p '${config.defaultValues.project}' -i './src/assets/i18n/EN-us.json, ./src/app/app.*.{json}' -f react-intl
     $ ${name} -p '${config.defaultValues.project}' -l 'https://8.8.8.8/locales/EN-eu.json' -f lingui-js
 
@@ -82,46 +82,58 @@ class Cli {
 
     public async runCli(): Promise<void> {
         try {
-            // Options
             const fileOptions: any = await this.getConfig(this.cliClient.opts().config);
             const commandOptions: any = this.cliClient.opts();
             const defaultOptions: any = config.defaultValues;
 
-            const resultOptions: any = {
-                ...defaultOptions,
-                ...defaultOptions?.rules,
+            const defaultRule = defaultOptions.rule;
+            const fileRule = fileOptions?.rule || {};
 
-                ...commandOptions,
+            const pick = (...values: any[]) => values.find(v => v !== undefined && v !== null);
 
-                ...fileOptions,
-                ...fileOptions?.rules,
+            const rule: IRulesConfig = {
+                zombieKeys: {
+                    type: commandOptions.zombieKeys || fileRule.zombieKeys?.type || defaultRule.zombieKeys.type,
+                    fix: pick(commandOptions.fixZombiesKeys, fileRule.zombieKeys?.fix, defaultRule.zombieKeys.fix),
+                },
+                keysOnViews: {
+                    type: commandOptions.keysOnViews || fileRule.keysOnViews?.type || defaultRule.keysOnViews.type,
+                },
+                emptyKeys: {
+                    type: commandOptions.emptyKeys || fileRule.emptyKeys?.type || defaultRule.emptyKeys.type,
+                },
+                misprintKeys: {
+                    type: commandOptions.misprintKeys || fileRule.misprintKeys?.type || defaultRule.misprintKeys.type,
+                    coefficient: pick(commandOptions.misprintCoefficient, fileRule.misprintKeys?.coefficient, defaultRule.misprintKeys.coefficient),
+                    ignored: fileRule.misprintKeys?.ignored || defaultRule.misprintKeys.ignored,
+                },
+                deepSearch: {
+                    type: commandOptions.deepSearch || fileRule.deepSearch?.type || defaultRule.deepSearch.type,
+                },
+                maxWarning: pick(commandOptions.maxWarning, fileRule.maxWarning, defaultRule.maxWarning),
+                ignoredKeys: fileRule.ignoredKeys || defaultRule.ignoredKeys,
+                customRegExpToFindKeys: fileRule.customRegExpToFindKeys || defaultRule.customRegExpToFindKeys,
+                namespaceKeys: fileRule.namespaceKeys || defaultRule.namespaceKeys,
+                maxKeyDepth: fileRule.maxKeyDepth || defaultRule.maxKeyDepth,
+                duplicateKeys: {
+                    type: commandOptions.duplicateKeys || fileRule.duplicateKeys?.type || defaultRule.duplicateKeys?.type,
+                },
+                missingTranslations: {
+                    type: commandOptions.missingTranslations || fileRule.missingTranslations?.type || defaultRule.missingTranslations?.type,
+                    fix: pick(commandOptions.fixMissingKeys, fileRule.missingTranslations?.fix, defaultRule.missingTranslations?.fix),
+                },
             };
 
-            const projectPath: string = resultOptions.project;
-            const languagePath: string = resultOptions.languages;
-            const fixZombiesKeys: boolean = resultOptions.fixZombiesKeys;
-            const deepSearch: ToggleRule = resultOptions.deepSearch;
-            const optionIgnore: string = resultOptions.ignore;
-            const optionMisprint: ErrorTypes = resultOptions.misprintKeys;
-            const optionEmptyKey: ErrorTypes = resultOptions.emptyKeys;
-            const optionViewsRule: ErrorTypes = resultOptions.keysOnViews;
-            const optionMaxWarning: number = resultOptions.maxWarning;
-            const optionZombiesRule: ErrorTypes = resultOptions.zombieKeys;
-            const optionIgnoredKeys: string[] = resultOptions.ignoredKeys;
-            const optionMisprintCoefficient: number = resultOptions.misprintCoefficient;
-            const optionIgnoredMisprintKeys: string[] = resultOptions.ignoredMisprintKeys;
-            const optionCustomRegExpToFindKeys: string[] | RegExp[] = resultOptions.customRegExpToFindKeys;
-            const fetchSettings: IFetch = resultOptions.fetch;
-            const frameworkPreset: Libraries = resultOptions.frameworkPreset;
+            const projectPath: string = commandOptions.project || fileOptions?.project || defaultOptions.project;
+            const languagePath: string = commandOptions.languages || fileOptions?.languages || defaultOptions.languages;
+            const optionIgnore: string = commandOptions.ignore;
+            const fetchSettings: IFetch = fileOptions?.fetch || defaultOptions.fetch;
+            const frameworkPreset: Libraries = commandOptions.frameworkPreset || fileOptions?.frameworkPreset || defaultOptions.frameworkPreset;
 
             if (projectPath && languagePath && !!frameworkPreset) {
-                await this.runLint(
-                    projectPath, languagePath, frameworkPreset, optionZombiesRule,
-                    optionViewsRule, optionIgnore, optionMaxWarning, optionMisprint, optionEmptyKey, deepSearch,
-                    optionMisprintCoefficient, optionIgnoredKeys, optionIgnoredMisprintKeys, optionCustomRegExpToFindKeys, fixZombiesKeys, fetchSettings
-                );
+                await this.runLint(projectPath, languagePath, frameworkPreset, rule, optionIgnore, rule.maxWarning, fetchSettings);
             } else {
-                const cliHasError: boolean = this.validate(resultOptions);
+                const cliHasError: boolean = this.validate({ project: projectPath, languages: languagePath, frameworkPreset });
                 if (cliHasError) {
                     process.exit(StatusCodes.crash);
                 } else {
@@ -184,39 +196,17 @@ class Cli {
         return false;
     }
 
-    public  async runLint(
+    public async runLint(
         project: string,
         languages: string,
         frameworkPreset: Libraries,
-        zombies?: ErrorTypes,
-        views?: ErrorTypes,
+        ruleConfig: IRulesConfig,
         ignore?: string,
-        maxWarning: number = 1,
-        misprint?: ErrorTypes,
-        emptyKeys?: ErrorTypes,
-        deepSearch?: ToggleRule,
-        misprintCoefficient: number = 0.9,
-        ignoredKeys: string[] = [],
-        ignoredMisprintKeys: string[] = [],
-        customRegExpToFindKeys: string[] | RegExp[] = [],
-        fixZombiesKeys?: boolean,
+        maxWarning: number = 0,
         fetchSettings?: IFetch,
     ): Promise<void> {
-            const errorConfig: IRulesConfig = {
-                misprintKeys: misprint || ErrorTypes.disable,
-                deepSearch: deepSearch || ToggleRule.disable,
-                zombieKeys: zombies || ErrorTypes.warning,
-                emptyKeys: emptyKeys || ErrorTypes.warning,
-                keysOnViews: views || ErrorTypes.error,
-                maxWarning,
-                ignoredKeys,
-                ignoredMisprintKeys,
-                misprintCoefficient,
-                customRegExpToFindKeys,
-            };
-
             const regexpList: string[] | undefined = libraries.get(frameworkPreset);
-            const validationModel: TranslateLint = new TranslateLint(project, languages, ignore, errorConfig, fixZombiesKeys, fetchSettings, regexpList);
+            const validationModel: TranslateLint = new TranslateLint(project, languages, ignore, ruleConfig, fetchSettings, regexpList);
             const resultCliModel: ResultCliModel = await validationModel.lint(maxWarning);
             const resultModel: ResultModel = resultCliModel.getResultModel();
             resultModel.printResult();

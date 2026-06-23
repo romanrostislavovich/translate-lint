@@ -4,17 +4,18 @@ import {Libraries} from "../libraries";
 
 const config: IAppConfig = {
     defaultValues: {
-        rules: {
-            zombieKeys: ErrorTypes.warning,
-            keysOnViews: ErrorTypes.error,
-            emptyKeys: ErrorTypes.warning,
-            deepSearch: ToggleRule.disable,
-            misprintKeys: ErrorTypes.disable,
-            maxWarning: 0,
-            misprintCoefficient: 0.9,
+        rule: {
+            zombieKeys:  { type: ErrorTypes.warning, fix: false },
+            keysOnViews: { type: ErrorTypes.error },
+            emptyKeys:   { type: ErrorTypes.warning },
+            misprintKeys: { type: ErrorTypes.disable, coefficient: 0.9, ignored: [] },
+            deepSearch:  { type: ToggleRule.disable },
+            maxWarning:  0,
             ignoredKeys: [],
-            ignoredMisprintKeys: [],
-            customRegExpToFindKeys: []
+            customRegExpToFindKeys: [],
+            maxKeyDepth: { type: ErrorTypes.disable, depth: 4 },
+            duplicateKeys: { type: ErrorTypes.disable },
+            missingTranslations: { type: ErrorTypes.disable, fix: false },
         },
         fetch: {
             requestQuery: "",
@@ -24,7 +25,6 @@ const config: IAppConfig = {
         project: './src/app/**/*.{html,ts,resx}',
         languages: './src/assets/i18n/*.{json,yaml,yml}',
         frameworkPreset: Libraries.AngularNgxTranslate,
-        fixZombiesKeys: false,
     }
 };
 

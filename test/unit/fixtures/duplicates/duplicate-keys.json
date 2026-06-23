@@ -1,0 +1,9 @@
+{
+  "BUTTON.SAVE": "Save",
+  "HEADER.TITLE": "Welcome",
+  "BUTTON.SAVE": "Save Again",
+  "nested": {
+    "child": "value1",
+    "child": "value2"
+  }
+}

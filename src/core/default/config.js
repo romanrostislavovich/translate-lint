@@ -1,24 +1,47 @@
 
 const config = {
-    rules: {
-        keysOnViews: "error",
-        zombieKeys: "warning",
-        emptyKeys: "warning",
-        misprint: {
-            "type": "warning",
-            "coefficient": 0.9
+    rule: {
+        keysOnViews: {
+            type: "error",
         },
+        zombieKeys: {
+            type: "warning",
+            fix: false,
+        },
+        emptyKeys: {
+            type: "warning",
+        },
+        misprintKeys: {
+            type: "warning",
+            coefficient: 0.9,
+            ignored: [],
+        },
+        deepSearch: {
+            type: "disable",
+        },
+        maxWarning: 0,
         ignoredKeys: [],
-        ignoredMisprintKeys: [],
+        customRegExpToFindKeys: [],
         namespaceKeys: {
             type: 'disable',
             delimiter: '.',          // use ':' for react-i18next
             namespaces: {
-                'bonus':      ['apps/bonus', 'apps/bonus-detail'],
+                'bonus':        ['apps/bonus', 'apps/bonus-detail'],
                 'registration': ['apps/registration', 'apps/auth'],
             },
             globalNamespaces: ['g', 'form', 'nav', 'popup'],
             ignoreInFolders: ['component-kit'],
+        },
+        maxKeyDepth: {
+            type: "disable",
+            depth: 3,
+        },
+        duplicateKeys: {
+            type: "disable",
+        },
+        missingTranslations: {
+            type: "disable",
+            fix: false,
         },
     },
     fetch: {
@@ -37,11 +60,9 @@ const config = {
             return result;
         }
     },
-    fixZombiesKeys: false,
     project: "./src/app/**/*.{html,ts}",
     languages: "./src/assets/i18n/*.{json,yaml,yml}",
     frameworkPreset: "angular-ngx-translate",
 }
 
 export default config;
-

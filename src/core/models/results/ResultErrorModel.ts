@@ -51,6 +51,17 @@ class ResultErrorModel implements IValidationMessage  {
                     ? `Key '${this.value}' is not allowed in '${this.currentPath}'. Allowed folders: ${this.absentedPath.join(', ')}`
                     : `Key '${this.value}' is not allowed in '${this.currentPath}'`;
                 break;
+            case ErrorFlow.maxKeyDepth:
+                message = `Key: '${this.value}' exceeds max key depth of ${this.absentedPath} (current depth: ${this.value.split('.').length}) in '${this.currentPath}'`;
+                break;
+            case ErrorFlow.duplicateKeys:
+                message = `Key: '${this.value}' is duplicated in '${this.currentPath}' (line ${this.absentedPath})`;
+                break;
+            case ErrorFlow.missingTranslations:
+                message = isArray(this.absentedPath)
+                    ? `Key: '${this.value}' is missing in '${this.currentPath}' (present in: ${this.absentedPath.join(', ')})`
+                    : `Key: '${this.value}' is missing in '${this.currentPath}'`;
+                break;
             default:
                 message = 'Unknown error please write to the author';
                 break;

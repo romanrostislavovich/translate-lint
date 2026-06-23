@@ -20,28 +20,26 @@ const languagesPath = './test/integration/angular-ngx-translate/inputs/locales/E
 const ignorePath    = './test/integration/angular-ngx-translate/inputs/locales/EN-eu.json, ./test/integration/angular-ngx-translate/inputs/views/angular_17.html';
 
 const defaultConfig: IRulesConfig = {
-    keysOnViews:            ErrorTypes.error,
-    zombieKeys:             ErrorTypes.warning,
-    emptyKeys:              ErrorTypes.warning,
-    misprintKeys:           ErrorTypes.disable,
-    deepSearch:             ToggleRule.disable,
+    zombieKeys:             { type: ErrorTypes.warning, fix: false },
+    keysOnViews:            { type: ErrorTypes.error },
+    emptyKeys:              { type: ErrorTypes.warning },
+    misprintKeys:           { type: ErrorTypes.disable, coefficient: 0.9, ignored: [] },
+    deepSearch:             { type: ToggleRule.disable },
     maxWarning:             0,
-    misprintCoefficient:    0.9,
     ignoredKeys:            [],
-    ignoredMisprintKeys:    [],
     customRegExpToFindKeys: [],
 };
 
 describe('TranslateLint', () => {
     describe('lint()', () => {
         it('should return a ResultCliModel', async () => {
-            const client = new TranslateLint(projectPath, languagesPath, ignorePath, defaultConfig, false, undefined, angularRegEx);
+            const client = new TranslateLint(projectPath, languagesPath, ignorePath, defaultConfig, undefined, angularRegEx);
             const result = await client.lint();
             assert.instanceOf(result, ResultCliModel);
         });
 
         it('should detect zombie keys', async () => {
-            const client = new TranslateLint(projectPath, languagesPath, ignorePath, defaultConfig, false, undefined, angularRegEx);
+            const client = new TranslateLint(projectPath, languagesPath, ignorePath, defaultConfig, undefined, angularRegEx);
             const result = await client.lint();
             const zombies = result.errors.filter(e => e.errorFlow === ErrorFlow.zombieKeys);
             assert.isAbove(zombies.length, 0);
@@ -49,22 +47,22 @@ describe('TranslateLint', () => {
 
         it('should detect empty keys', async () => {
             const ignoreViews = './test/integration/angular-ngx-translate/inputs/views/angular_17.html';
-            const client = new TranslateLint(projectPath, languagesPath, ignoreViews, defaultConfig, false, undefined, angularRegEx);
+            const client = new TranslateLint(projectPath, languagesPath, ignoreViews, defaultConfig, undefined, angularRegEx);
             const result = await client.lint();
             assert.isTrue(result.hasEmptyKeys());
         });
 
         it('should respect ignoredKeys', async () => {
             const config = { ...defaultConfig, ignoredKeys: ['IGNORED.KEY.FLAG'] };
-            const client = new TranslateLint(projectPath, languagesPath, ignorePath, config, false, undefined, angularRegEx);
+            const client = new TranslateLint(projectPath, languagesPath, ignorePath, config, undefined, angularRegEx);
             const result = await client.lint();
             const ignored = result.errors.filter(e => e.value === 'IGNORED.KEY.FLAG');
             assert.equal(ignored.length, 0);
         });
 
         it('should disable zombie rule when set to disable', async () => {
-            const config = { ...defaultConfig, zombieKeys: ErrorTypes.disable };
-            const client = new TranslateLint(projectPath, languagesPath, ignorePath, config, false, undefined, angularRegEx);
+            const config = { ...defaultConfig, zombieKeys: { type: ErrorTypes.disable } };
+            const client = new TranslateLint(projectPath, languagesPath, ignorePath, config, undefined, angularRegEx);
             const result = await client.lint();
             const zombies = result.errors.filter(e => e.errorFlow === ErrorFlow.zombieKeys);
             assert.equal(zombies.length, 0);
@@ -86,7 +84,7 @@ describe('TranslateLint', () => {
                 ignoreInFolders:  [],
             };
             const config = { ...defaultConfig, namespaceKeys: nsConfig };
-            const client = new TranslateLint(projectPath, languagesPath, ignorePath, config, false, undefined, angularRegEx);
+            const client = new TranslateLint(projectPath, languagesPath, ignorePath, config, undefined, angularRegEx);
             const result = await client.lint();
             const nsErrors = result.errors.filter(e => e.errorFlow === ErrorFlow.namespaceKeys);
             assert.isAbove(nsErrors.length, 0);
@@ -95,7 +93,7 @@ describe('TranslateLint', () => {
 
     describe('getLanguages()', () => {
         it('should return an array of LanguagesModel', () => {
-            const client = new TranslateLint(projectPath, languagesPath, ignorePath, defaultConfig, false, undefined, angularRegEx);
+            const client = new TranslateLint(projectPath, languagesPath, ignorePath, defaultConfig, undefined, angularRegEx);
             const result = client.getLanguages();
             assert.isArray(result);
             assert.isAbove(result.length, 0);
@@ -105,7 +103,7 @@ describe('TranslateLint', () => {
 
     describe('getKeys()', () => {
         it('should return an array of KeyModelWithLanguages', () => {
-            const client = new TranslateLint(projectPath, languagesPath, ignorePath, defaultConfig, false, undefined, angularRegEx);
+            const client = new TranslateLint(projectPath, languagesPath, ignorePath, defaultConfig, undefined, angularRegEx);
             const result = client.getKeys();
             assert.isArray(result);
             assert.isAbove(result.length, 0);

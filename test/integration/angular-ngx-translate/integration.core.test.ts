@@ -47,12 +47,12 @@ describe('Core Integration', () => {
        it('should be find keys',async () => {
            // Arrange
            const errorConfig: IRulesConfig = {
-               ...defaultConfig.defaultValues.rules,
+               ...defaultConfig.defaultValues.rule,
                customRegExpToFindKeys: [/marker\("(.*)"\)/gm]
            };
 
            // Act
-           const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath, undefined, errorConfig, undefined, undefined, defaultToolsRegEx);
+           const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath, undefined, errorConfig, undefined, defaultToolsRegEx);
            const result: ResultCliModel = await model.lint();
 
            // Assert
@@ -66,7 +66,7 @@ describe('Core Integration', () => {
             const countEmptyKeys: number = 1;
             const errorType: ErrorTypes = ErrorTypes.warning;
             // Act
-            const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath, undefined, undefined, undefined, undefined, defaultToolsRegEx);
+            const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath, undefined, undefined, undefined, defaultToolsRegEx);
             const result: ResultCliModel = await model.lint();
 
             // Assert
@@ -80,11 +80,11 @@ describe('Core Integration', () => {
             const countEmptyKeys: number = 1;
             const errorType: ErrorTypes = ErrorTypes.error;
             const errorConfig: IRulesConfig = {
-                ...defaultConfig.defaultValues.rules,
-                emptyKeys: ErrorTypes.error,
+                ...defaultConfig.defaultValues.rule,
+                emptyKeys: { type: ErrorTypes.error },
             };
             // Act
-            const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath, undefined, errorConfig, undefined, undefined, defaultToolsRegEx);
+            const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath, undefined, errorConfig, undefined, defaultToolsRegEx);
             const result: ResultCliModel = await model.lint();
 
             // Assert
@@ -100,7 +100,7 @@ describe('Core Integration', () => {
             const countMisprint: number = 0;
 
             // Act
-            const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath, undefined, undefined, undefined, undefined, defaultToolsRegEx);
+            const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath, undefined, undefined, undefined, defaultToolsRegEx);
             const result: ResultCliModel = await model.lint();
 
             // Assert
@@ -110,15 +110,13 @@ describe('Core Integration', () => {
         it('should be error', async () => {
             // Arrange
             const errorConfig: IRulesConfig = {
-                keysOnViews: ErrorTypes.error,
-                zombieKeys: ErrorTypes.warning,
-                misprintKeys:  ErrorTypes.error,
-                deepSearch: ToggleRule.enable,
-                emptyKeys: ErrorTypes.warning,
+                zombieKeys:   { type: ErrorTypes.warning },
+                keysOnViews:  { type: ErrorTypes.error },
+                emptyKeys:    { type: ErrorTypes.warning },
+                misprintKeys: { type: ErrorTypes.error, coefficient: 0.9, ignored: [] },
+                deepSearch:   { type: ToggleRule.enable },
                 maxWarning: 1,
-                misprintCoefficient: 0.9,
                 ignoredKeys: ["IGNORED.KEY.FLAG"],
-                ignoredMisprintKeys: [],
                 customRegExpToFindKeys: []
             };
             const hasMisprint: boolean = true;
@@ -137,7 +135,7 @@ describe('Core Integration', () => {
             );
 
             // Act
-            const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath,  '', errorConfig, undefined, undefined, defaultToolsRegEx);
+            const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath, '', errorConfig, undefined, defaultToolsRegEx);
             const result: ResultCliModel = await model.lint();
             const clearErrors: ResultErrorModel[] = result.errors.filter((error: ResultErrorModel) => error.errorFlow === ErrorFlow.misprintKeys);
 
@@ -152,11 +150,11 @@ describe('Core Integration', () => {
             const countMisprint: number = 2;
             const ignorePath: string = `${languagesIgnorePath}, ${projectIgnorePath}`;
             const errorConfig: IRulesConfig = {
-                ...defaultConfig.defaultValues.rules,
-                misprintKeys:  ErrorTypes.warning,
+                ...defaultConfig.defaultValues.rule,
+                misprintKeys: { type: ErrorTypes.warning },
             };
             // Act
-            const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath, ignorePath, errorConfig, undefined, undefined, defaultToolsRegEx);
+            const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath, ignorePath, errorConfig, undefined, defaultToolsRegEx);
             const result: ResultCliModel = await model.lint();
 
             // Assert
@@ -167,7 +165,7 @@ describe('Core Integration', () => {
     describe('Warnings', () => {
         it('should be 0 by default', async () => {
             // Act
-            const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath, undefined, undefined, undefined, undefined, defaultToolsRegEx);
+            const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath, undefined, undefined, undefined, defaultToolsRegEx);
             const result:  ResultCliModel = await model.lint();
 
             // Assert
@@ -175,24 +173,21 @@ describe('Core Integration', () => {
         });
         it('should be error if warnings more thant 2', async () => {
             // Arrange
-            const ignorePath: string = '';
             const maxWarnings: number = 5;
             const ifFullOfWarning: boolean = true;
             const errorConfig: IRulesConfig = {
-                keysOnViews: ErrorTypes.warning,
-                zombieKeys: ErrorTypes.warning,
-                emptyKeys: ErrorTypes.warning,
+                zombieKeys:   { type: ErrorTypes.warning },
+                keysOnViews:  { type: ErrorTypes.warning },
+                emptyKeys:    { type: ErrorTypes.warning },
+                misprintKeys: { type: ErrorTypes.disable, coefficient: 0.9, ignored: [] },
+                deepSearch:   { type: ToggleRule.enable },
                 maxWarning: 1,
-                misprintCoefficient: 0.9,
-                misprintKeys: ErrorTypes.disable,
-                deepSearch: ToggleRule.enable,
                 ignoredKeys: ["IGNORED.KEY.FLAG"],
-                ignoredMisprintKeys: [],
                 customRegExpToFindKeys: []
             };
 
             // Act
-            const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath, ignorePath, errorConfig, undefined, undefined, defaultToolsRegEx);
+            const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath, '', errorConfig, undefined, defaultToolsRegEx);
             const result:  ResultCliModel = await model.lint(maxWarnings);
 
             // Assert
@@ -205,7 +200,7 @@ describe('Core Integration', () => {
             const ifFullOfWarning: boolean = false;
 
             // Act
-            const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath, undefined, undefined, undefined, undefined, defaultToolsRegEx);
+            const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath, undefined, undefined, undefined, defaultToolsRegEx);
             const result: ResultCliModel =  await model.lint(maxWarnings);
 
             // Assert
@@ -219,13 +214,13 @@ describe('Core Integration', () => {
             const ignoreAbsoluteProjectPath: string = path.resolve(__dirname, process.cwd(), projectIgnorePath);
             const ignorePath: string = `${languagesIgnorePath}, ${ignoreAbsoluteProjectPath}, ${ignoreAngular17LanguagesPath}, ${ignoreAngular17ViewPath}`;
             const errorConfig: IRulesConfig = {
-                ...defaultConfig.defaultValues.rules,
-                deepSearch: ToggleRule.enable,
-                misprintKeys: ErrorTypes.warning
+                ...defaultConfig.defaultValues.rule,
+                deepSearch:   { type: ToggleRule.enable },
+                misprintKeys: { type: ErrorTypes.warning },
             };
 
             // Act
-            const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath, ignorePath, errorConfig, undefined, undefined, defaultToolsRegEx);
+            const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath, ignorePath, errorConfig, undefined, defaultToolsRegEx);
             const result: ResultCliModel = await model.lint();
 
             // Assert
@@ -237,7 +232,7 @@ describe('Core Integration', () => {
             const ignorePath: string = `null, 0, undefined, '',`;
 
             // Act
-            const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath, ignorePath, undefined, undefined, undefined, defaultToolsRegEx);
+            const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath, ignorePath, undefined, undefined, defaultToolsRegEx);
             const result: ResultCliModel = await model.lint();
 
             // Assert
@@ -250,7 +245,7 @@ describe('Core Integration', () => {
             const absolutePathProject: string = path.resolve(__dirname, process.cwd(), projectWithMaskPath);
 
             // Act
-            const model: TranslateLint = new TranslateLint(absolutePathProject, languagesWithMaskPath, undefined, undefined, undefined, undefined, defaultToolsRegEx);
+            const model: TranslateLint = new TranslateLint(absolutePathProject, languagesWithMaskPath, undefined, undefined, undefined, defaultToolsRegEx);
             const result: ResultCliModel = await model.lint();
 
             // Assert
@@ -261,12 +256,12 @@ describe('Core Integration', () => {
             // Arrange
             const ignorePath: string = `${languagesIgnorePath}, ${projectIgnorePath}, ${languagesIncorrectFile}, ${ignoreAngular17LanguagesPath}, ${ignoreAngular17ViewPath}`;
             const errorConfig: IRulesConfig = {
-                ...defaultConfig.defaultValues.rules,
-                deepSearch: ToggleRule.enable,
-                misprintKeys: ErrorTypes.warning
+                ...defaultConfig.defaultValues.rule,
+                deepSearch:   { type: ToggleRule.enable },
+                misprintKeys: { type: ErrorTypes.warning },
             };
             // Act
-            const model: TranslateLint = new TranslateLint(projectAbsentMaskPath, languagesAbsentMaskPath, ignorePath, errorConfig, undefined, undefined, defaultToolsRegEx);
+            const model: TranslateLint = new TranslateLint(projectAbsentMaskPath, languagesAbsentMaskPath, ignorePath, errorConfig, undefined, defaultToolsRegEx);
             const result: ResultCliModel = await model.lint();
 
             // Assert
@@ -312,7 +307,7 @@ describe('Core Integration', () => {
     describe('Config', () => {
         it('should be default', async () => {
             // Act
-            const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath, undefined, undefined, undefined, undefined, defaultToolsRegEx);
+            const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath, undefined, undefined, undefined, defaultToolsRegEx);
             const result:  ResultCliModel = await model.lint();
 
             // Assert
@@ -340,20 +335,18 @@ describe('Core Integration', () => {
         it('should be custom', async () => {
             // Arrange
             const errorConfig: IRulesConfig = {
-                keysOnViews: ErrorTypes.warning,
-                zombieKeys: ErrorTypes.disable,
-                emptyKeys: ErrorTypes.warning,
+                zombieKeys:   { type: ErrorTypes.disable },
+                keysOnViews:  { type: ErrorTypes.warning },
+                emptyKeys:    { type: ErrorTypes.warning },
+                misprintKeys: { type: ErrorTypes.disable, coefficient: 0.9, ignored: [] },
+                deepSearch:   { type: ToggleRule.enable },
                 maxWarning: 1,
-                misprintCoefficient: 0.9,
-                misprintKeys: ErrorTypes.disable,
-                deepSearch: ToggleRule.enable,
                 ignoredKeys: ["IGNORED.KEY.FLAG", "STRING.KEY_FROM_ANGULAR_17.EXIST_IN_ALL_LOCALES"],
-                ignoredMisprintKeys: [],
                 customRegExpToFindKeys: []
             };
 
             // Act
-            const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath, ignoreAngular17ViewPath, errorConfig, undefined, undefined, defaultToolsRegEx);
+            const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath, ignoreAngular17ViewPath, errorConfig, undefined, defaultToolsRegEx);
             const result: ResultCliModel = await model.lint();
 
             // Assert
@@ -366,7 +359,7 @@ describe('Core Integration', () => {
                // Arrange
                const countOfLanguage: number = 2;
                // Act
-               const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath, undefined, undefined, undefined, undefined, defaultToolsRegEx);
+               const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath, undefined, undefined, undefined, defaultToolsRegEx);
                const result: LanguagesModel[] = model.getLanguages();
 
                // Assert
@@ -378,7 +371,7 @@ describe('Core Integration', () => {
                 // Arrange
                  const countOfKeys: number = configValues.totalKeys;
                 // Act
-                const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath, undefined, undefined, undefined, undefined, defaultToolsRegEx);
+                const model: TranslateLint = new TranslateLint(projectWithMaskPath, languagesWithMaskPath, undefined, undefined, undefined, defaultToolsRegEx);
                 const result: KeyModelWithLanguages[] = model.getKeys();
 
                 // Assert
@@ -388,15 +381,13 @@ describe('Core Integration', () => {
     });
     it('Angular 17',  async () => {
         const errorConfig: IRulesConfig = {
-            keysOnViews: ErrorTypes.error,
-            zombieKeys: ErrorTypes.warning,
-            emptyKeys: ErrorTypes.warning,
+            zombieKeys:   { type: ErrorTypes.warning },
+            keysOnViews:  { type: ErrorTypes.error },
+            emptyKeys:    { type: ErrorTypes.warning },
+            misprintKeys: { type: ErrorTypes.warning, coefficient: 0.9, ignored: [] },
+            deepSearch:   { type: ToggleRule.enable },
             maxWarning: 1,
-            misprintCoefficient: 0.9,
-            misprintKeys: ErrorTypes.warning,
-            deepSearch: ToggleRule.enable,
             ignoredKeys: ["IGNORED.KEY.FLAG"],
-            ignoredMisprintKeys: [],
             customRegExpToFindKeys: []
         };
         const absolutePathProject: string = path.resolve(__dirname, process.cwd(), projectAngular17Path);
@@ -404,7 +395,7 @@ describe('Core Integration', () => {
         const ignorePath: string = `${languagesIgnorePath}, ${ignoreAbsoluteProjectPath}`;
 
         // Act
-        const model: TranslateLint = new TranslateLint(absolutePathProject, languagesAngular17Path, ignorePath, errorConfig, undefined, undefined, defaultToolsRegEx);
+        const model: TranslateLint = new TranslateLint(absolutePathProject, languagesAngular17Path, ignorePath, errorConfig, undefined, defaultToolsRegEx);
         const result: ResultCliModel = await model.lint();
 
         // Assert
@@ -413,15 +404,13 @@ describe('Core Integration', () => {
     it('with full arguments', async () => {
         // Arrange
         const errorConfig: IRulesConfig = {
-            keysOnViews: ErrorTypes.error,
-            zombieKeys: ErrorTypes.warning,
-            emptyKeys: ErrorTypes.warning,
+            zombieKeys:   { type: ErrorTypes.warning },
+            keysOnViews:  { type: ErrorTypes.error },
+            emptyKeys:    { type: ErrorTypes.warning },
+            misprintKeys: { type: ErrorTypes.warning, coefficient: 0.9, ignored: [] },
+            deepSearch:   { type: ToggleRule.enable },
             maxWarning: 1,
-            misprintCoefficient: 0.9,
-            misprintKeys: ErrorTypes.warning,
-            deepSearch: ToggleRule.enable,
             ignoredKeys: ["IGNORED.KEY.FLAG"],
-            ignoredMisprintKeys: [],
             customRegExpToFindKeys: []
         };
         const absolutePathProject: string = path.resolve(__dirname, process.cwd(), projectWithMaskPath);
@@ -429,7 +418,7 @@ describe('Core Integration', () => {
         const ignorePath: string = `${languagesIgnorePath}, ${ignoreAbsoluteProjectPath}, ${ignoreAngular17LanguagesPath}, ${ignoreAngular17ViewPath}`;
 
         // Act
-        const model: TranslateLint = new TranslateLint(absolutePathProject, languagesWithMaskPath, ignorePath, errorConfig, undefined, undefined, defaultToolsRegEx);
+        const model: TranslateLint = new TranslateLint(absolutePathProject, languagesWithMaskPath, ignorePath, errorConfig, undefined, defaultToolsRegEx);
         const result: ResultCliModel = await model.lint();
 
         // Assert

@@ -17,6 +17,7 @@
     - [TypeScript](#typescript)
 - [Rules](#rules)
     - [namespaceKeys](#namespacekeysrule)
+    - [maxKeyDepth](#maxkeydepthrule)
 - [Contribute](#contribute)
 - [Used By](#used-by)
 - [License](#license)
@@ -127,16 +128,27 @@ Examples:
 Default JSON Config is:
 ```json
 {
-    "rules": {
-        "keysOnViews": "error",
-        "zombieKeys": "warning",
-        "misprintKeys": "disable",
-        "deepSearch": "disable",
-        "emptyKeys": "warning",
-        "maxWarning": "0",
-        "misprintCoefficient": "0.9",
+    "rule": {
+        "keysOnViews": {
+            "type": "error"
+        },
+        "zombieKeys": {
+            "type": "warning",
+            "fix": false
+        },
+        "emptyKeys": {
+            "type": "warning"
+        },
+        "misprintKeys": {
+            "type": "disable",
+            "coefficient": 0.9,
+            "ignored": []
+        },
+        "deepSearch": {
+            "type": "disable"
+        },
+        "maxWarning": 0,
         "ignoredKeys": [ "IGNORED.KEY.(.*)" ],
-        "ignoredMisprintKeys": [],
         "customRegExpToFindKeys": [ "(?<=marker\\(['\"])([A-Za-z0-9_\\-.]+)(?=['\"]\\))"],
         "namespaceKeys": {
             "type": "disable",
@@ -144,6 +156,17 @@ Default JSON Config is:
             "namespaces": {},
             "globalNamespaces": [],
             "ignoreInFolders": []
+        },
+        "maxKeyDepth": {
+            "type": "disable",
+            "depth": 4
+        },
+        "duplicateKeys": {
+            "type": "disable"
+        },
+        "missingTranslations": {
+            "type": "disable",
+            "fix": false
         }
     },
     "fetch": {
@@ -151,7 +174,6 @@ Default JSON Config is:
         "requestHeaders": {},
         "responseQuery": ""
     },
-    "fixZombiesKeys": false,
     "project": "./src/app/**/*.{html,ts}",
     "languages": "./src/assets/i18n/*.{json,yaml,yml}",
     "frameworkPreset": "angular-ngx-translate"
@@ -164,16 +186,28 @@ Example JS config is:
 ```javascript
 
 const config = {
-    rules: {
-        keysOnViews: "error",
-        zombieKeys: "warning",
-        emptyKeys: "warning",
-        misprint: {
-            type: "warning",
-            coefficient: 0.9
+    rule: {
+        keysOnViews: {
+            type: "error",
         },
+        zombieKeys: {
+            type: "warning",
+            fix: false,
+        },
+        emptyKeys: {
+            type: "warning",
+        },
+        misprintKeys: {
+            type: "warning",
+            coefficient: 0.9,
+            ignored: [],
+        },
+        deepSearch: {
+            type: "disable",
+        },
+        maxWarning: 0,
         ignoredKeys: [],
-        ignoredMisprintKeys: [],
+        customRegExpToFindKeys: [],
         namespaceKeys: {
             type: 'error',
             delimiter: '.',       // use ':' for react-i18next (e.g. t('bonus:TITLE'))
@@ -183,6 +217,17 @@ const config = {
             },
             globalNamespaces: ['g', 'form', 'nav', 'popup'],
             ignoreInFolders: ['sandbox-component-kit'],
+        },
+        maxKeyDepth: {
+            type: "disable",
+            depth: 4,
+        },
+        duplicateKeys: {
+            type: "disable",
+        },
+        missingTranslations: {
+            type: "disable",
+            fix: false,
         },
     },
     fetch: {
@@ -205,7 +250,6 @@ const config = {
             return result;
         }
     },
-    fixZombiesKeys: false,
     project: "./src/app/**/*.{html,ts}",
     languages: "./src/assets/i18n/*.{json,yaml,yml}",
     frameworkPreset: "angular-ngx-translate"
@@ -254,6 +298,7 @@ import {
   TranslateLint,
   IRulesConfig,
   INamespaceRule,
+  IMaxKeyDepthRule,
   ResultCliModel,
   ErrorTypes,
   LanguagesModel,
@@ -262,7 +307,7 @@ import {
   Libraries
 } from 'translate-lint';
 
-const libraryPreset: Libraries = Libraries.angularNgxTranslate;
+const libraryPreset: Libraries = Libraries.AngularNgxTranslate;
 const viewsPath: string = './src/app/**/*.{html,ts}';
 const languagesPath: string = './src/assets/i18n/*.json';
 const ignoredLanguagesPath: string = "./src/assets/i18n/ru.json, ./src/assets/i18n/ru-RU.json";
@@ -278,20 +323,24 @@ const namespaceRule: INamespaceRule = {
   ignoreInFolders: ['sandbox-component-kit'],
 };
 
+const maxKeyDepthRule: IMaxKeyDepthRule = {
+  type: ErrorTypes.error,
+  depth: 4,
+};
+
 const ruleConfig: IRulesConfig = {
-  keysOnViews: ErrorTypes.error,
-  zombieKeys: ErrorTypes.warning,
-  misprintKeys: ErrorTypes.disable,
-  deepSearch: ToggleRule.disable,
-  emptyKeys: ErrorTypes.warning,
+  zombieKeys:   { type: ErrorTypes.warning, fix: false },
+  keysOnViews:  { type: ErrorTypes.error },
+  emptyKeys:    { type: ErrorTypes.warning },
+  misprintKeys: { type: ErrorTypes.disable, coefficient: 0.9, ignored: [] },
+  deepSearch:   { type: ToggleRule.disable },
   maxWarning: 0,
-  misprintCoefficient: 0.9,
   ignoredKeys: ['EXAMPLE.KEY', 'IGNORED.KEY.(.*)'],
-  ignoredMisprintKeys: [],
   customRegExpToFindKeys: ["(?<=marker\\(['\"])([A-Za-z0-9_\\-.]+)(?=['\"]\\))"],
   namespaceKeys: namespaceRule,
+  maxKeyDepth: maxKeyDepthRule,
 };
-const fixZombiesKeys: boolean = false;
+
 const fetchSettings: IFetch = {
   requestQuery: "",
   requestHeaders: {},
@@ -302,13 +351,100 @@ const fetchSettings: IFetch = {
 };
 
 const regexpToFindKeys = libraries.get(libraryPreset);
-const translateLint = new TranslateLint(viewsPath, languagesPath, ignoredLanguagesPath, ruleConfig, fixZombiesKeys, fetchSettings, regexpToFindKeys)
+const translateLint = new TranslateLint(viewsPath, languagesPath, ignoredLanguagesPath, ruleConfig, fetchSettings, regexpToFindKeys)
 const resultLint: ResultCliModel = translateLint.lint(); // Run Lint
 const languages: LanguagesModel[] = translateLint.getLanguages()  // Get Languages with all keys and views
 
 ```
 
 ## Rules
+
+### missingTranslations
+
+The `missingTranslations` rule detects keys that exist in at least one language file but are absent from one or more other language files. This catches incomplete translations across your locale set.
+
+**How it works:**
+
+1. For each key, the set of language files where it appears is compared against all known language files
+2. If any file is missing the key → error or warning (based on `type`)
+3. The rule is skipped when fewer than 2 language files are present
+
+**Config options:**
+
+| Option | Type | Description |
+|---|---|---|
+| `type` | `error` \| `warning` \| `disable` | Severity of the rule |
+| `fix` | `boolean` | When `true`, automatically adds missing keys to language files with an empty value |
+
+**JSON config example:**
+```json
+"rule": {
+    "missingTranslations": {
+        "type": "warning",
+        "fix": false
+    }
+}
+```
+
+**CLI flags:**
+```
+--mt, --missingTranslations [enum]    Detect keys missing in some language files
+                                      Possible Values: <disable|warning|error>
+                                      (default: "disable")
+
+--fm, --fixMissingKeys [boolean]      Auto-add missing keys to all language files with an empty value
+```
+
+**Auto-fix behaviour:**
+
+When `fix: true` (or `--fm` CLI flag), for each language file that is missing a key the tool writes the key back into the file with an empty string value. The format of the written key matches the file's existing structure:
+
+- **Flat JSON** `{"AUTH.TITLE": "Login"}` → adds `"BTN.CANCEL": ""`
+- **Nested JSON** `{"AUTH": {"TITLE": "Login"}}` → adds `{"BTN": {"CANCEL": ""}}`
+
+> Only `.json` files are auto-fixed. `.yaml`/`.yml` files are reported but not modified.
+
+**Error message example:**
+```
+Key: 'AUTH.TITLE' is missing in 'ru.json' (present in: en.json, fr.json)
+```
+
+### duplicateKeys
+
+The `duplicateKeys` rule detects translation keys that appear more than once inside the same language file. Duplicate keys are silently dropped by JSON/YAML parsers — the last value wins — so the earlier value is lost without any warning.
+
+**How it works:**
+
+1. Each language file is read as raw text
+2. Keys are tracked per nesting level using indentation
+3. If the same key appears twice at the same level in the same file → error or warning
+
+**Config options:**
+
+| Option | Type | Description |
+|---|---|---|
+| `type` | `error` \| `warning` \| `disable` | Severity of the rule |
+
+**JSON config example:**
+```json
+"rule": {
+    "duplicateKeys": {
+        "type": "warning"
+    }
+}
+```
+
+**CLI flag:**
+```
+--dk, --duplicateKeys [enum]    Detect keys duplicated within the same language file
+                                Possible Values: <disable|warning|error>
+                                (default: "disable")
+```
+
+**Error message example:**
+```
+Key: 'BUTTON.SAVE' is duplicated in 'src/assets/i18n/en.json' (line 42)
+```
 
 ### namespaceKeys
 
@@ -345,6 +481,38 @@ The `namespaceKeys` rule enforces that translation keys belonging to a specific 
 **Error message example:**
 ```
 Key 'bonus.TITLE' is not allowed in 'apps/dashboard/component.html'. Allowed folders: apps/bonus, apps/bonus-detail
+```
+
+### maxKeyDepth
+
+The `maxKeyDepth` rule enforces a maximum nesting depth for translation keys. A key's depth is the number of dot-separated segments (e.g. `a.b.c` has depth 3). If a key exceeds the configured limit, an error or warning is reported.
+
+**How it works:**
+
+1. The depth of a key is calculated as the number of `.` characters + 1 (e.g. `a.b.c.d.e` → depth 5)
+2. If `depth > maxKeyDepth.depth` → error or warning (based on `type`)
+3. If `type` is `disable` → rule is skipped entirely
+
+**Config options:**
+
+| Option | Type | Description |
+|---|---|---|
+| `type` | `error` \| `warning` \| `disable` | Severity of the rule |
+| `depth` | `number` | Maximum allowed depth (inclusive). Keys with more segments will be reported |
+
+**JSON config example:**
+```json
+"rule": {
+    "maxKeyDepth": {
+        "type": "error",
+        "depth": 3
+    }
+}
+```
+
+**Error message example:**
+```
+Key: 'a.b.c.d.e' exceeds max key depth of 3 (current depth: 5) in 'en.json'
 ```
 
 ## Contribute

@@ -9,9 +9,12 @@ enum ErrorFlow {
     maxWarning = 'maxWarning',
     zombieKeys = 'zombieKeys',
     keysOnViews = 'keysOnViews',
+    maxKeyDepth = 'maxKeyDepth',
     misprintKeys = 'misprintKeys',
-    misprintCoefficient = 'misprintCoefficient',
+    duplicateKeys = 'duplicateKeys',
     namespaceKeys = 'namespaceKeys',
+    missingTranslations = 'missingTranslations',
+    misprintCoefficient = 'misprintCoefficient',
 }
 
 export { ErrorFlow };

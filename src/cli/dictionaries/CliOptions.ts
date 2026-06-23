@@ -113,7 +113,7 @@ const cliOptions: OptionModel[] = [
         type: ArgumentTypes.glob,
         description: `Max count of warnings in all files. If this value more that count of warnings, then an error is return`,
         additionalDescription: ``,
-        default: config.defaultValues.rules.maxWarning.toString(),
+        default: config.defaultValues.rule.maxWarning?.toString(),
         values: [
             ArgumentTypes.number,
         ]
@@ -152,7 +152,7 @@ const cliOptions: OptionModel[] = [
         type: ArgumentTypes.number,
         description: `Coefficient for misprint option can be from 0 to 1.0.`,
         additionalDescription: ``,
-        default: config.defaultValues.rules.misprintCoefficient.toString(),
+        default: config.defaultValues.rule.misprintKeys?.coefficient!.toString(),
     }),
     new OptionModel({
         longName: OptionsLongNames.config,
@@ -172,6 +172,42 @@ const cliOptions: OptionModel[] = [
         required: false,
         type: ArgumentTypes.boolean,
         description: `Auto fix zombies keys on languages files`,
+        additionalDescription: ``,
+    }),
+    new OptionModel({
+        longName: OptionsLongNames.duplicateKeys,
+        shortName: OptionsShortNames.duplicateKeys,
+        required: false,
+        type: ArgumentTypes.enum,
+        description: `Detect keys that are duplicated within the same language file`,
+        additionalDescription: ``,
+        default: ErrorTypes.disable,
+        values: [
+            ErrorTypes.disable,
+            ErrorTypes.warning,
+            ErrorTypes.error,
+        ],
+    }),
+    new OptionModel({
+        longName: OptionsLongNames.missingTranslations,
+        shortName: OptionsShortNames.missingTranslations,
+        required: false,
+        type: ArgumentTypes.enum,
+        description: `Detect keys that exist in one language file but are missing in others`,
+        additionalDescription: ``,
+        default: ErrorTypes.disable,
+        values: [
+            ErrorTypes.disable,
+            ErrorTypes.warning,
+            ErrorTypes.error,
+        ],
+    }),
+    new OptionModel({
+        longName: OptionsLongNames.fixMissingKeys,
+        shortName: OptionsShortNames.fixMissingKeys,
+        required: false,
+        type: ArgumentTypes.boolean,
+        description: `Auto-add missing keys to all language files with an empty value`,
         additionalDescription: ``,
     }),
 ];

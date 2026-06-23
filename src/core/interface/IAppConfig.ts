@@ -9,6 +9,11 @@ interface IFetch {
     requestHeaders: { [key: string]: string };
 }
 
+interface IMaxKeyDepthRule {
+    type: ErrorTypes;
+    depth: number;
+}
+
 interface INamespaceRule {
     type: ErrorTypes;
     delimiter: string;
@@ -18,16 +23,15 @@ interface INamespaceRule {
 }
 
 interface IDefaultValues {
-    rules: IRulesConfig;
+    rule: IRulesConfig;
     fetch: IFetch;
     project: string;
     languages: string;
     frameworkPreset: Libraries;
-    fixZombiesKeys?: boolean;
 }
 
 interface IAppConfig {
     defaultValues: IDefaultValues;
 }
 
-export { IAppConfig, IFetch, INamespaceRule };
+export { IAppConfig, IFetch, INamespaceRule, IMaxKeyDepthRule };

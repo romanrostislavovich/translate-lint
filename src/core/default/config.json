@@ -1,20 +1,43 @@
 {
-  "rules": {
-    "keysOnViews": "error",
-    "zombieKeys": "warning",
-    "emptyKeys": "warning",
-    "misprint": {
-      "type": "warning",
-      "coefficient": 0.9
+  "rule": {
+    "keysOnViews": {
+      "type": "error"
     },
+    "zombieKeys": {
+      "type": "warning",
+      "fix": false
+    },
+    "emptyKeys": {
+      "type": "warning"
+    },
+    "misprintKeys": {
+      "type": "warning",
+      "coefficient": 0.9,
+      "ignored": []
+    },
+    "deepSearch": {
+      "type": "disable"
+    },
+    "maxWarning": 0,
     "ignoredKeys": [],
-    "ignoredMisprintKeys": [],
+    "customRegExpToFindKeys": [],
     "namespaceKeys": {
       "type": "disable",
       "delimiter": ".",
       "namespaces": {},
       "globalNamespaces": [],
       "ignoreInFolders": []
+    },
+    "maxKeyDepth": {
+      "type": "disable",
+      "depth": 3
+    },
+    "duplicateKeys": {
+      "type": "disable"
+    },
+    "missingTranslations": {
+      "type": "disable",
+      "fix": false
     }
   },
   "fetch": {
@@ -22,7 +45,6 @@
     "requestHeaders": {},
     "responseQuery": ""
   },
-  "fixZombiesKeys": false,
   "project": "./src/app/**/*.{html,ts}",
   "languages": "./src/assets/i18n/*.{json,yaml,yml}",
   "frameworkPreset": "angular-ngx-translate"

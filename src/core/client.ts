@@ -2,9 +2,9 @@ import * as path from 'node:path';
 import { config } from './config';
 import { ErrorFlow, ErrorTypes } from './enums';
 import { IFetch, IRulesConfig } from './interface';
-import { KeysUtils, parseJsonFile, saveJsonFile } from './utils';
+import { KeysUtils, parseJsonFile, saveJsonFile, setMissingKey } from './utils';
 import { FileLanguageModel, FileViewModel, KeyModel, LanguagesModel, ResultCliModel, ResultErrorModel } from './models';
-import { AbsentViewKeysRule, EmptyKeysRule, MisprintRule, NamespaceRule, ZombieRule } from './rules';
+import { AbsentViewKeysRule, DuplicateKeysRule, EmptyKeysRule, MaxKeyDepthRule, MisprintRule, MissingTranslationsRule, NamespaceRule, ZombieRule } from './rules';
 import { KeyModelWithLanguages, LanguagesModelWithKey, ViewModelWithKey } from './models/KeyModelWithLanguages';
 import { Http } from './utils/http';
 
@@ -13,7 +13,6 @@ class TranslateLint {
     public ignore?: string;
     public projectPath: string;
     public languagesPath: string;
-    public fixZombiesKeys: boolean | undefined;
     public fetchSettings: IFetch | undefined;
     public toolsRegEx: string[] = [];
 
@@ -21,8 +20,7 @@ class TranslateLint {
         projectPath: string = config.defaultValues.project,
         languagesPath: string = config.defaultValues.languages,
         ignore?: string,
-        rulesConfig: IRulesConfig = config.defaultValues.rules,
-        fixZombiesKeys?: boolean,
+        rulesConfig: IRulesConfig = config.defaultValues.rule,
         fetchSettings?: IFetch,
         toolsRegEx: string[] = [],
     ) {
@@ -30,7 +28,6 @@ class TranslateLint {
         this.rules = rulesConfig;
         this.projectPath = projectPath;
         this.languagesPath = languagesPath;
-        this.fixZombiesKeys = fixZombiesKeys;
         this.fetchSettings = fetchSettings;
         this.toolsRegEx = toolsRegEx;
     }
@@ -52,7 +49,7 @@ class TranslateLint {
         }
 
         const languagesKeysNames: string[] = languagesKeys.keys.flatMap((key: KeyModel) => key.name);
-        const viewsRegExp: RegExp = KeysUtils.findKeysList(languagesKeysNames, this.rules.customRegExpToFindKeys, this.rules.deepSearch, this.toolsRegEx);
+        const viewsRegExp: RegExp = KeysUtils.findKeysList(languagesKeysNames, this.rules.customRegExpToFindKeys, this.rules.deepSearch.type, this.toolsRegEx);
 
         const views: FileViewModel = new FileViewModel(this.projectPath, [], [], this.ignore).getKeys(viewsRegExp);
 
@@ -63,10 +60,13 @@ class TranslateLint {
         let errors: ResultErrorModel[] = [];
 
         if (
-            this.rules.zombieKeys !== ErrorTypes.disable ||
-            this.rules.keysOnViews !== ErrorTypes.disable ||
-            this.rules.misprintKeys !== ErrorTypes.disable ||
-            this.rules.emptyKeys !== ErrorTypes.disable
+            this.rules.zombieKeys.type !== ErrorTypes.disable ||
+            this.rules.keysOnViews.type !== ErrorTypes.disable ||
+            this.rules.misprintKeys.type !== ErrorTypes.disable ||
+            this.rules.emptyKeys.type !== ErrorTypes.disable ||
+            (!!this.rules.maxKeyDepth && this.rules.maxKeyDepth.type !== ErrorTypes.disable) ||
+            (!!this.rules.duplicateKeys && this.rules.duplicateKeys.type !== ErrorTypes.disable) ||
+            (!!this.rules.missingTranslations && this.rules.missingTranslations.type !== ErrorTypes.disable)
         ) {
             const regExpResult: ResultErrorModel[] = this.runRegExp(views, languagesKeys);
             errors.push(...regExpResult);
@@ -117,7 +117,7 @@ class TranslateLint {
 
         if (this.projectPath) {
             const languagesKeysNames: string[] = languagesKeys.keys.flatMap((key: KeyModel) => key.name);
-            const viewsRegExp: RegExp = KeysUtils.findKeysList(languagesKeysNames, this.rules.customRegExpToFindKeys, this.rules.deepSearch, this.toolsRegEx);
+            const viewsRegExp: RegExp = KeysUtils.findKeysList(languagesKeysNames, this.rules.customRegExpToFindKeys, this.rules.deepSearch.type, this.toolsRegEx);
             const views: FileViewModel = new FileViewModel(this.projectPath, [], [], this.ignore).getKeys(viewsRegExp);
 
             result.forEach((language: LanguagesModel) => {
@@ -167,23 +167,27 @@ class TranslateLint {
     ): ResultErrorModel[] {
         const result: ResultErrorModel[] = [];
 
-        if (rules.zombieKeys !== ErrorTypes.disable) {
-            const ruleInstance: ZombieRule = new ZombieRule(this.rules.zombieKeys);
+        if (rules.zombieKeys.type !== ErrorTypes.disable) {
+            const ruleInstance: ZombieRule = new ZombieRule(this.rules.zombieKeys.type);
             result.push(...ruleInstance.check(views.keys, languagesKeys.keys));
         }
 
-        if (rules.keysOnViews !== ErrorTypes.disable) {
-            const ruleInstance: AbsentViewKeysRule = new AbsentViewKeysRule(this.rules.keysOnViews, languagesKeys.files);
+        if (rules.keysOnViews.type !== ErrorTypes.disable) {
+            const ruleInstance: AbsentViewKeysRule = new AbsentViewKeysRule(this.rules.keysOnViews.type, languagesKeys.files);
             result.push(...ruleInstance.check(views.keys, languagesKeys.keys));
         }
 
-        if (rules.misprintKeys !== ErrorTypes.disable) {
-            const ruleInstance: MisprintRule = new MisprintRule(this.rules.misprintKeys, this.rules.misprintCoefficient, this.rules.ignoredMisprintKeys);
+        if (rules.misprintKeys.type !== ErrorTypes.disable) {
+            const ruleInstance: MisprintRule = new MisprintRule(
+                this.rules.misprintKeys.type,
+                this.rules.misprintKeys.coefficient,
+                this.rules.misprintKeys.ignored,
+            );
             result.push(...ruleInstance.check(result, languagesKeys.keys));
         }
 
-        if (rules.emptyKeys !== ErrorTypes.disable) {
-            const ruleInstance: EmptyKeysRule = new EmptyKeysRule(this.rules.emptyKeys);
+        if (rules.emptyKeys.type !== ErrorTypes.disable) {
+            const ruleInstance: EmptyKeysRule = new EmptyKeysRule(this.rules.emptyKeys.type);
             result.push(...ruleInstance.check(languagesKeys.keys));
         }
 
@@ -192,7 +196,42 @@ class TranslateLint {
             result.push(...ruleInstance.check(views.keys, languagesKeys.keys));
         }
 
-        if (String(this.fixZombiesKeys).toLowerCase() === 'true') {
+        if (!!rules.maxKeyDepth && rules.maxKeyDepth.type !== ErrorTypes.disable) {
+            const ruleInstance: MaxKeyDepthRule = new MaxKeyDepthRule(rules.maxKeyDepth.type, rules.maxKeyDepth.depth);
+            result.push(...ruleInstance.check(views.keys, languagesKeys.keys));
+        }
+
+        if (!!rules.duplicateKeys && rules.duplicateKeys.type !== ErrorTypes.disable) {
+            const ruleInstance: DuplicateKeysRule = new DuplicateKeysRule(rules.duplicateKeys.type, languagesKeys.files);
+            result.push(...ruleInstance.check([], languagesKeys.keys));
+        }
+
+        if (!!rules.missingTranslations && rules.missingTranslations.type !== ErrorTypes.disable) {
+            const ruleInstance: MissingTranslationsRule = new MissingTranslationsRule(rules.missingTranslations.type, languagesKeys.files);
+            result.push(...ruleInstance.check([], languagesKeys.keys));
+
+            if (String(rules.missingTranslations.fix).toLowerCase() === 'true') {
+                const missingByFile = new Map<string, string[]>();
+                result.forEach((error) => {
+                    if (error.errorFlow === ErrorFlow.missingTranslations) {
+                        const keys = missingByFile.get(error.currentPath) ?? [];
+                        keys.push(error.value);
+                        missingByFile.set(error.currentPath, keys);
+                    }
+                });
+
+                missingByFile.forEach((keys, filePath) => {
+                    if (!filePath.endsWith('.json')) return;
+                    try {
+                        const jsonData: any = parseJsonFile(filePath);
+                        keys.forEach(keyName => setMissingKey(jsonData, keyName));
+                        saveJsonFile(jsonData, filePath);
+                    } catch { /* skip unreadable files */ }
+                });
+            }
+        }
+
+        if (String(this.rules.zombieKeys.fix).toLowerCase() === 'true') {
             const filesAndKeysMap: Map<string, FileLanguageModel> = new Map<string, FileLanguageModel>();
 
             result.forEach((error) => {

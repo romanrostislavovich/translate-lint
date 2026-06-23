@@ -14,6 +14,9 @@ enum OptionsLongNames {
     fixZombiesKeys = 'fixZombiesKeys',
     frameworkPreset = 'frameworkPreset',
     misprintCoefficient = 'misprintCoefficient',
+    duplicateKeys = 'duplicateKeys',
+    missingTranslations = 'missingTranslations',
+    fixMissingKeys = 'fixMissingKeys',
 }
 
 enum OptionsShortNames {
@@ -30,6 +33,9 @@ enum OptionsShortNames {
     fixZombiesKeys = 'fz',
     frameworkPreset = 'f',
     misprintCoefficient = 'mc',
+    duplicateKeys = 'dk',
+    missingTranslations = 'mt',
+    fixMissingKeys = 'fm',
 }
 
 export { OptionsLongNames, OptionsShortNames };
