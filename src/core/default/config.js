@@ -43,6 +43,10 @@ const config = {
             type: "disable",
             fix: false,
         },
+        keyNamingConvention: {
+            type: "disable",
+            format: "SCREAMING_SNAKE",  // SCREAMING_SNAKE | camelCase | snake_case | kebab-case | PascalCase
+        },
     },
     fetch: {
         requestQuery: "",
@@ -63,6 +67,7 @@ const config = {
     project: "./src/app/**/*.{html,ts}",
     languages: "./src/assets/i18n/*.{json,yaml,yml}",
     frameworkPreset: "angular-ngx-translate",
+    format: "stylish",  // "stylish" | "json"
 }
 
 export default config;

@@ -1,4 +1,4 @@
-import { ErrorTypes, ToggleRule } from './../enums';
+import { ErrorTypes, NamingConvention, ToggleRule } from './../enums';
 import { IMaxKeyDepthRule, INamespaceRule } from './IAppConfig';
 
 interface IZombieKeysRule {
@@ -33,6 +33,11 @@ interface IMissingTranslationsRule {
     fix?: boolean;
 }
 
+interface IKeyNamingConventionRule {
+    type: ErrorTypes;
+    format: NamingConvention;
+}
+
 interface IRulesConfig {
     zombieKeys: IZombieKeysRule;
     keysOnViews: IKeysOnViewsRule;
@@ -46,6 +51,7 @@ interface IRulesConfig {
     maxKeyDepth?: IMaxKeyDepthRule;
     duplicateKeys?: IDuplicateKeysRule;
     missingTranslations?: IMissingTranslationsRule;
+    keyNamingConvention?: IKeyNamingConventionRule;
 }
 
-export { IRulesConfig, IZombieKeysRule, IKeysOnViewsRule, IEmptyKeysRule, IMisprintKeysRule, IDeepSearchRule, IDuplicateKeysRule, IMissingTranslationsRule };
+export { IRulesConfig, IZombieKeysRule, IKeysOnViewsRule, IEmptyKeysRule, IMisprintKeysRule, IDeepSearchRule, IDuplicateKeysRule, IMissingTranslationsRule, IKeyNamingConventionRule };

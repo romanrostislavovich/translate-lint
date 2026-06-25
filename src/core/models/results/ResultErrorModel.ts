@@ -62,6 +62,11 @@ class ResultErrorModel implements IValidationMessage  {
                     ? `Key: '${this.value}' is missing in '${this.currentPath}' (present in: ${this.absentedPath.join(', ')})`
                     : `Key: '${this.value}' is missing in '${this.currentPath}'`;
                 break;
+            case ErrorFlow.keyNamingConvention: {
+                const [segment, format] = (this.absentedPath as string).split('|');
+                message = `Key: '${this.value}' has segment '${segment}' that violates '${format}' naming convention in '${this.currentPath}'`;
+                break;
+            }
             default:
                 message = 'Unknown error please write to the author';
                 break;

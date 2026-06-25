@@ -1,7 +1,7 @@
 import {ArgumentTypes} from 'conventional-cli';
 
 import {OptionModel} from '../models';
-import {config, ErrorTypes, ToggleRule} from './../../core';
+import {config, ErrorTypes, NamingConvention, OutputFormat, ToggleRule} from './../../core';
 import {OptionsLongNames, OptionsPath, OptionsShortNames} from './../enums';
 import {Libraries} from "../../libraries";
 
@@ -208,6 +208,56 @@ const cliOptions: OptionModel[] = [
         required: false,
         type: ArgumentTypes.boolean,
         description: `Auto-add missing keys to all language files with an empty value`,
+        additionalDescription: ``,
+    }),
+    new OptionModel({
+        longName: OptionsLongNames.keyNamingConvention,
+        shortName: OptionsShortNames.keyNamingConvention,
+        required: false,
+        type: ArgumentTypes.enum,
+        description: `Enforce a naming convention for translation key segments`,
+        additionalDescription: ``,
+        default: ErrorTypes.disable,
+        values: [
+            ErrorTypes.disable,
+            ErrorTypes.warning,
+            ErrorTypes.error,
+        ],
+    }),
+    new OptionModel({
+        longName: OptionsLongNames.keyNamingConventionFormat,
+        shortName: OptionsShortNames.keyNamingConventionFormat,
+        required: false,
+        type: ArgumentTypes.enum,
+        description: `Naming format used by the keyNamingConvention rule`,
+        additionalDescription: ``,
+        default: NamingConvention.SCREAMING_SNAKE,
+        values: [
+            NamingConvention.SCREAMING_SNAKE,
+            NamingConvention.camelCase,
+            NamingConvention.snake_case,
+            NamingConvention.kebabCase,
+            NamingConvention.PascalCase,
+        ],
+    }),
+    new OptionModel({
+        longName: OptionsLongNames.format,
+        shortName: OptionsShortNames.format,
+        required: false,
+        type: ArgumentTypes.enum,
+        description: `Output format for lint results`,
+        additionalDescription: ``,
+        default: OutputFormat.stylish,
+        values: [
+            OutputFormat.stylish,
+            OutputFormat.json,
+        ],
+    }),
+    new OptionModel({
+        longName: OptionsLongNames.init,
+        required: false,
+        type: ArgumentTypes.boolean,
+        description: `Interactively generate a translate-lint config file`,
         additionalDescription: ``,
     }),
 ];

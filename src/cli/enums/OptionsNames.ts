@@ -1,5 +1,6 @@
 enum OptionsLongNames {
     help = 'help',
+    init = 'init',
     ignore = 'ignore',
     config = 'config',
     version = 'version',
@@ -17,6 +18,9 @@ enum OptionsLongNames {
     duplicateKeys = 'duplicateKeys',
     missingTranslations = 'missingTranslations',
     fixMissingKeys = 'fixMissingKeys',
+    keyNamingConvention = 'keyNamingConvention',
+    keyNamingConventionFormat = 'keyNamingConventionFormat',
+    format = 'format',
 }
 
 enum OptionsShortNames {
@@ -36,6 +40,9 @@ enum OptionsShortNames {
     duplicateKeys = 'dk',
     missingTranslations = 'mt',
     fixMissingKeys = 'fm',
+    keyNamingConvention = 'knc',
+    keyNamingConventionFormat = 'kncf',
+    format = 'ft',
 }
 
 export { OptionsLongNames, OptionsShortNames };

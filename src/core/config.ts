@@ -1,4 +1,4 @@
-import {ErrorTypes, ToggleRule} from './enums';
+import {ErrorTypes, NamingConvention, OutputFormat, ToggleRule} from './enums';
 import {IAppConfig} from './interface';
 import {Libraries} from "../libraries";
 
@@ -16,6 +16,7 @@ const config: IAppConfig = {
             maxKeyDepth: { type: ErrorTypes.disable, depth: 4 },
             duplicateKeys: { type: ErrorTypes.disable },
             missingTranslations: { type: ErrorTypes.disable, fix: false },
+            keyNamingConvention: { type: ErrorTypes.disable, format: NamingConvention.SCREAMING_SNAKE },
         },
         fetch: {
             requestQuery: "",
@@ -25,6 +26,7 @@ const config: IAppConfig = {
         project: './src/app/**/*.{html,ts,resx}',
         languages: './src/assets/i18n/*.{json,yaml,yml}',
         frameworkPreset: Libraries.AngularNgxTranslate,
+        format: OutputFormat.stylish,
     }
 };
 

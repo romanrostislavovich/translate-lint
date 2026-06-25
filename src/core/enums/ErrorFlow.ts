@@ -15,6 +15,7 @@ enum ErrorFlow {
     namespaceKeys = 'namespaceKeys',
     missingTranslations = 'missingTranslations',
     misprintCoefficient = 'misprintCoefficient',
+    keyNamingConvention = 'keyNamingConvention',
 }
 
 export { ErrorFlow };

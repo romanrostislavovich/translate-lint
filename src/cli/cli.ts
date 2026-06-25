@@ -6,6 +6,8 @@ import {
     ErrorTypes,
     FatalErrorModel,
     IRulesConfig,
+    NamingConvention,
+    OutputFormat,
     TranslateLint,
     ResultCliModel,
     ResultModel,
@@ -18,6 +20,7 @@ import {
 
 import { config } from './../core/config';
 import { OptionsLongNames } from './enums';
+import { runInit } from './init/InitRunner';
 import chalk from 'chalk';
 import path from 'path';
 
@@ -82,8 +85,14 @@ class Cli {
 
     public async runCli(): Promise<void> {
         try {
-            const fileOptions: any = await this.getConfig(this.cliClient.opts().config);
             const commandOptions: any = this.cliClient.opts();
+
+            if (commandOptions.init) {
+                await runInit();
+                return;
+            }
+
+            const fileOptions: any = await this.getConfig(commandOptions.config);
             const defaultOptions: any = config.defaultValues;
 
             const defaultRule = defaultOptions.rule;
@@ -122,6 +131,10 @@ class Cli {
                     type: commandOptions.missingTranslations || fileRule.missingTranslations?.type || defaultRule.missingTranslations?.type,
                     fix: pick(commandOptions.fixMissingKeys, fileRule.missingTranslations?.fix, defaultRule.missingTranslations?.fix),
                 },
+                keyNamingConvention: {
+                    type: commandOptions.keyNamingConvention || fileRule.keyNamingConvention?.type || defaultRule.keyNamingConvention?.type,
+                    format: (commandOptions.keyNamingConventionFormat || fileRule.keyNamingConvention?.format || defaultRule.keyNamingConvention?.format) as NamingConvention,
+                },
             };
 
             const projectPath: string = commandOptions.project || fileOptions?.project || defaultOptions.project;
@@ -130,8 +143,10 @@ class Cli {
             const fetchSettings: IFetch = fileOptions?.fetch || defaultOptions.fetch;
             const frameworkPreset: Libraries = commandOptions.frameworkPreset || fileOptions?.frameworkPreset || defaultOptions.frameworkPreset;
 
+            const outputFormat: OutputFormat = commandOptions.format || fileOptions?.format || defaultOptions.format;
+
             if (projectPath && languagePath && !!frameworkPreset) {
-                await this.runLint(projectPath, languagePath, frameworkPreset, rule, optionIgnore, rule.maxWarning, fetchSettings);
+                await this.runLint(projectPath, languagePath, frameworkPreset, rule, optionIgnore, rule.maxWarning, fetchSettings, outputFormat);
             } else {
                 const cliHasError: boolean = this.validate({ project: projectPath, languages: languagePath, frameworkPreset });
                 if (cliHasError) {
@@ -204,13 +219,20 @@ class Cli {
         ignore?: string,
         maxWarning: number = 0,
         fetchSettings?: IFetch,
+        format: OutputFormat = OutputFormat.stylish,
     ): Promise<void> {
             const regexpList: string[] | undefined = libraries.get(frameworkPreset);
             const validationModel: TranslateLint = new TranslateLint(project, languages, ignore, ruleConfig, fetchSettings, regexpList);
             const resultCliModel: ResultCliModel = await validationModel.lint(maxWarning);
             const resultModel: ResultModel = resultCliModel.getResultModel();
-            resultModel.printResult();
-            resultModel.printSummery();
+
+            if (format === OutputFormat.json) {
+                process.stdout.write(JSON.stringify(resultModel.toJson(), null, 2) + '\n');
+            } else {
+                resultModel.printResult();
+                resultModel.printSummery();
+                resultModel.printCoverage();
+            }
 
             process.exitCode = resultCliModel.exitCode();
 
@@ -222,8 +244,7 @@ class Cli {
     private printCurrentVersion(): void {
         // tslint:disable-next-line:no-any
         const packageJson: any = parseJsonFile(getPackageJsonPath());
-        // tslint:disable-next-line:no-console
-        console.log(`Current version: ${packageJson.version}`);
+        process.stderr.write(`Current version: ${packageJson.version}\n`);
     }
 }
 

@@ -1,6 +1,6 @@
 import { IRulesConfig } from './IRulesConfig';
 import { Libraries } from "../../libraries";
-import { ErrorTypes } from '../enums';
+import { ErrorTypes, OutputFormat } from '../enums';
 
 interface IFetch {
     get?: Function;
@@ -28,6 +28,7 @@ interface IDefaultValues {
     project: string;
     languages: string;
     frameworkPreset: Libraries;
+    format: OutputFormat;
 }
 
 interface IAppConfig {

@@ -14,8 +14,10 @@
 - [Installation](#installation)
 - [Usage](#usage)
     - [CLI](#cli)
+    - [Init](#init)
     - [TypeScript](#typescript)
 - [Rules](#rules)
+    - [keyNamingConvention](#keyNamingConvention)
     - [namespaceKeys](#namespacekeysrule)
     - [maxKeyDepth](#maxkeydepthrule)
 - [Contribute](#contribute)
@@ -110,7 +112,31 @@ Options:
   --fz, --fixZombiesKeys [boolean]       
           Auto fix zombies keys on languages files
           
-          
+  --dk, --duplicateKeys [enum]
+          Detect keys that are duplicated within the same language file
+          Possible Values: <disable|warning|error>
+           (default: "disable")
+  --mt, --missingTranslations [enum]
+          Detect keys that exist in one language file but are missing in others
+          Possible Values: <disable|warning|error>
+           (default: "disable")
+  --fm, --fixMissingKeys [boolean]
+          Auto-add missing keys to all language files with an empty value
+  --ft, --format [enum]
+          Output format for lint results
+          Possible Values: <stylish|json>
+           (default: "stylish")
+  --knc, --keyNamingConvention [enum]
+          Enforce a naming convention for translation key segments
+          Possible Values: <disable|warning|error>
+           (default: "disable")
+  --kncf, --keyNamingConventionFormat [enum]
+          Naming format used by the keyNamingConvention rule
+          Possible Values: <SCREAMING_SNAKE|camelCase|snake_case|kebab-case|PascalCase>
+           (default: "SCREAMING_SNAKE")
+  --init [boolean]
+          Interactively generate a translate-lint config file
+
   -v, --version                          Print current version of translate-lint
   -h, --help                             display help for command
 
@@ -124,6 +150,53 @@ Examples:
 ```    
 
 > NOTE: For `project` and `languages` options need to include file types like on the example.
+
+#### Output format
+
+By default, results are printed in a human-readable stylish format. Pass `--format json` (or `--ft json`) to get machine-readable JSON output — useful for CI pipelines or tooling integration:
+
+```bash
+translate-lint -p './src/**/*.ts' -l './locales/*.json' -f react-i18next --format json
+```
+
+JSON output structure:
+
+```json
+{
+  "errors": [
+    {
+      "key": "AUTH.LOGIN",
+      "errorType": "error",
+      "rule": "keysOnViews",
+      "file": "src/app/login.ts",
+      "message": ["Key: 'AUTH.LOGIN' doesn't exist in 'src/app/login.ts'"]
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "errors": 2,
+    "warnings": 1
+  },
+  "coverage": {
+    "totalKeys": 120,
+    "usedKeys": 105,
+    "unusedKeys": 15,
+    "percentage": 87.5
+  }
+}
+```
+
+> The version banner is written to **stderr** so stdout remains clean JSON.
+
+#### Coverage report
+
+After each run the tool prints a coverage summary showing what percentage of keys defined in language files are actually referenced in the project:
+
+```
+Coverage: 87.5% (105/120 keys used)
+```
+
+Color coding: **green** ≥ 80 %, **yellow** ≥ 60 %, **red** < 60 %.
 
 Default JSON Config is:
 ```json
@@ -290,6 +363,42 @@ The CLI process may exit with the following codes:
 - `1`: Linting failed with one or more rule violations with severity error
 - `2`: An invalid command line argument or combination thereof was used
 
+### Init
+
+Run the interactive config generator to create a `translate-lint.config.json` (or `.js`) file in the current directory:
+
+```bash
+translate-lint --init
+```
+
+The wizard asks five questions and writes a ready-to-use config with all rules pre-filled to their default values:
+
+```
+Welcome to translate-lint config generator!
+
+Config format (json/js) [json]:
+Available framework presets:
+  1. angular-ngx-translate
+  2. react-i18next
+  ...
+Select framework preset (1–8) [1]: 2
+Project path [./src/**/*.{tsx,ts,jsx,js}]:
+Languages path [./public/locales/**/*.json]:
+Output file name [translate-lint.config.json]:
+
+✓ Created translate-lint.config.json
+
+Run: translate-lint --config ./translate-lint.config.json
+```
+
+The project and languages paths are pre-filled with sensible defaults for the chosen framework. Press **Enter** to accept a default.
+
+After generation, pass the file to the linter via `--config`:
+
+```bash
+translate-lint --config ./translate-lint.config.json
+```
+
 ### TypeScript
 
 ```typescript
@@ -358,6 +467,60 @@ const languages: LanguagesModel[] = translateLint.getLanguages()  // Get Languag
 ```
 
 ## Rules
+
+### keyNamingConvention
+
+The `keyNamingConvention` rule enforces that every dot-separated segment of a translation key matches a configured naming format. This helps keep key names consistent across the whole project.
+
+**How it works:**
+
+1. Each key is split by `.` into segments (e.g. `auth.LOGIN_BUTTON.text` → `["auth", "LOGIN_BUTTON", "text"]`)
+2. Every segment is validated against the chosen format's regular expression
+3. The first failing segment triggers an error or warning (based on `type`)
+4. One error is reported per language file where the key appears
+
+**Supported formats:**
+
+| Format | Pattern | Example key |
+|---|---|---|
+| `SCREAMING_SNAKE` | `^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$` | `AUTH.LOGIN_BUTTON` |
+| `camelCase` | `^[a-z][a-zA-Z0-9]*$` | `auth.loginButton` |
+| `snake_case` | `^[a-z][a-z0-9]*(_[a-z0-9]+)*$` | `auth.login_button` |
+| `kebab-case` | `^[a-z][a-z0-9]*(-[a-z0-9]+)*$` | `auth.login-button` |
+| `PascalCase` | `^[A-Z][a-zA-Z0-9]*$` | `Auth.LoginButton` |
+
+**Config options:**
+
+| Option | Type | Description |
+|---|---|---|
+| `type` | `error` \| `warning` \| `disable` | Severity of the rule |
+| `format` | `SCREAMING_SNAKE` \| `camelCase` \| `snake_case` \| `kebab-case` \| `PascalCase` | Naming convention to enforce |
+
+**JSON config example:**
+```json
+"rule": {
+    "keyNamingConvention": {
+        "type": "warning",
+        "format": "SCREAMING_SNAKE"
+    }
+}
+```
+
+**CLI flags:**
+```
+--knc, --keyNamingConvention [enum]       Enforce key naming convention
+                                          Possible Values: <disable|warning|error>
+                                          (default: "disable")
+
+--kncf, --keyNamingConventionFormat [enum]  Naming format to enforce
+                                            Possible Values: <SCREAMING_SNAKE|camelCase|snake_case|kebab-case|PascalCase>
+                                            (default: "SCREAMING_SNAKE")
+```
+
+**Error message example:**
+```
+Key: 'AUTH.cancelButton' has segment 'cancelButton' that violates 'SCREAMING_SNAKE' naming convention in 'en.json'
+```
 
 ### missingTranslations
 

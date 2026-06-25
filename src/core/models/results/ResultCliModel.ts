@@ -4,9 +4,19 @@ import { ResultFileModel } from './ResultFileModel';
 import { ResultErrorModel } from './ResultErrorModel';
 import { ErrorFlow, ErrorTypes, StatusCodes } from '../../enums';
 
+interface ICoverageReport {
+    totalKeys: number;
+    usedKeys: number;
+    unusedKeys: number;
+    percentage: number;
+}
+
+const DEFAULT_COVERAGE: ICoverageReport = { totalKeys: 0, usedKeys: 0, unusedKeys: 0, percentage: 0 };
+
 class ResultCliModel {
     public errors: ResultErrorModel[] = [];
     public maxCountWarning: number = 0;
+    public coverage: ICoverageReport;
 
     private _warningsCount: number = 0;
     private _errorsCount: number = 0;
@@ -16,9 +26,11 @@ class ResultCliModel {
     constructor(
         errors: ResultErrorModel[] = [],
         maxCountWarning: number = 0,
+        coverage: ICoverageReport = DEFAULT_COVERAGE,
     ) {
         this.errors = errors;
         this.maxCountWarning = +maxCountWarning;
+        this.coverage = coverage;
 
         for (const error of this.errors) {
             if (error.errorType === ErrorTypes.warning) {
@@ -120,4 +132,4 @@ class ResultCliModel {
     }
 }
 
-export { ResultCliModel };
+export { ResultCliModel, ICoverageReport };

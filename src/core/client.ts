@@ -4,7 +4,8 @@ import { ErrorFlow, ErrorTypes } from './enums';
 import { IFetch, IRulesConfig } from './interface';
 import { KeysUtils, parseJsonFile, saveJsonFile, setMissingKey } from './utils';
 import { FileLanguageModel, FileViewModel, KeyModel, LanguagesModel, ResultCliModel, ResultErrorModel } from './models';
-import { AbsentViewKeysRule, DuplicateKeysRule, EmptyKeysRule, MaxKeyDepthRule, MisprintRule, MissingTranslationsRule, NamespaceRule, ZombieRule } from './rules';
+import { AbsentViewKeysRule, DuplicateKeysRule, EmptyKeysRule, KeyNamingConventionRule, MaxKeyDepthRule, MisprintRule, MissingTranslationsRule, NamespaceRule, ZombieRule } from './rules';
+import { ICoverageReport } from './models/results/ResultCliModel';
 import { KeyModelWithLanguages, LanguagesModelWithKey, ViewModelWithKey } from './models/KeyModelWithLanguages';
 import { Http } from './utils/http';
 
@@ -81,7 +82,15 @@ class TranslateLint {
             });
         }
 
-        return new ResultCliModel(errors, maxWarning);
+        const totalKeys: number = languagesKeys.keys.length;
+        const viewKeyNames: Set<string> = new Set(views.keys.map((k: KeyModel) => k.name));
+        const usedKeys: number = languagesKeys.keys.filter((k: KeyModel) => viewKeyNames.has(k.name)).length;
+        const percentage: number = totalKeys > 0
+            ? Math.round((usedKeys / totalKeys) * 10000) / 100
+            : 0;
+        const coverage: ICoverageReport = { totalKeys, usedKeys, unusedKeys: totalKeys - usedKeys, percentage };
+
+        return new ResultCliModel(errors, maxWarning, coverage);
     }
 
     public getLanguages(): LanguagesModel[] {
@@ -203,6 +212,11 @@ class TranslateLint {
 
         if (!!rules.duplicateKeys && rules.duplicateKeys.type !== ErrorTypes.disable) {
             const ruleInstance: DuplicateKeysRule = new DuplicateKeysRule(rules.duplicateKeys.type, languagesKeys.files);
+            result.push(...ruleInstance.check([], languagesKeys.keys));
+        }
+
+        if (!!rules.keyNamingConvention && rules.keyNamingConvention.type !== ErrorTypes.disable) {
+            const ruleInstance: KeyNamingConventionRule = new KeyNamingConventionRule(rules.keyNamingConvention.type, rules.keyNamingConvention.format);
             result.push(...ruleInstance.check([], languagesKeys.keys));
         }
 

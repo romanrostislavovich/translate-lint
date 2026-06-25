@@ -1,4 +1,6 @@
 import { isArray } from 'lodash';
+// tslint:disable-next-line:no-require-imports
+const chalk = require('chalk');
 
 import { ResultFileModel } from './ResultFileModel';
 import { ResultErrorModel } from './ResultErrorModel';
@@ -80,6 +82,37 @@ class ResultModel extends StylishLogger {
             this.printMessage(`TOTAL: \t\t ${this.cli.countWarnings() + this.cli.countErrors()}`, totalErrorType);
             this.printMessage(`\n`);
         }
+    }
+
+    public printCoverage(): void {
+        const { totalKeys, usedKeys, percentage } = this.cli.coverage;
+        if (totalKeys === 0) { return; }
+        const color = percentage >= 80 ? chalk.green : percentage >= 60 ? chalk.yellow : chalk.red;
+
+        console.log(color(`--------------------\nCoverage: ${percentage}% (${usedKeys}/${totalKeys} keys used)\n--------------------\n`));
+    }
+
+    public toJson(): object {
+        const errors = this.cli.errors.map((error: ResultErrorModel) => {
+            const msg = error.message();
+            return {
+                key:       error.value,
+                errorType: error.errorType,
+                rule:      error.errorFlow,
+                file:      error.currentPath,
+                message:   isArray(msg) ? msg : [msg],
+            };
+        });
+
+        return {
+            errors,
+            summary: {
+                total:    this.cli.countWarnings() + this.cli.countErrors(),
+                errors:   this.cli.countErrors(),
+                warnings: this.cli.countWarnings(),
+            },
+            coverage: this.cli.coverage,
+        };
     }
 }
 

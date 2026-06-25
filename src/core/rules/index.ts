@@ -6,3 +6,4 @@ export * from './NamespaceRule';
 export * from './MaxKeyDepthRule';
 export * from './DuplicateKeysRule';
 export * from './MissingTranslationsRule';
+export * from './KeyNamingConventionRule';
