@@ -1,7 +1,7 @@
 {
     "author": "Raman Lauryniuk <romanrostislavovich@gmail.com>",
     "name": "translate-lint",
-    "version": "1.4.0",
+    "version": "1.4.1",
     "description": "Simple tools for checking translate keys in the whole app that uses regexp. Support for popular libraries and frameworks\n",
     "license": "MIT",
     "repository": "https://github.com/romanrostislavovich/translate-lint.git",

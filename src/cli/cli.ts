@@ -5,6 +5,7 @@ import { OptionModel } from './models';
 import {
     ErrorTypes,
     FatalErrorModel,
+    IDefaultValues,
     IRulesConfig,
     NamingConvention,
     OutputFormat,
@@ -23,6 +24,48 @@ import { OptionsLongNames } from './enums';
 import { runInit } from './init/InitRunner';
 import chalk from 'chalk';
 import path from 'path';
+
+interface ICommandOptions {
+    init?: boolean;
+    config?: string;
+    ignore?: string;
+    project?: string;
+    languages?: string;
+    frameworkPreset?: string;
+    zombieKeys?: string;
+    fixZombiesKeys?: string;
+    keysOnViews?: string;
+    emptyKeys?: string;
+    misprintKeys?: string;
+    misprintCoefficient?: string;
+    deepSearch?: string;
+    maxWarning?: string;
+    duplicateKeys?: string;
+    missingTranslations?: string;
+    fixMissingKeys?: string;
+    keyNamingConvention?: string;
+    keyNamingConventionFormat?: string;
+    format?: string;
+}
+
+interface IFileConfig {
+    project?: string;
+    languages?: string;
+    frameworkPreset?: string;
+    format?: string;
+    rule?: Partial<IRulesConfig>;
+    fetch?: IFetch;
+}
+
+interface IValidateOptions {
+    project: string;
+    languages: string;
+    frameworkPreset: string;
+}
+
+function pick<T>(...values: Array<T | undefined | null>): T | undefined {
+    return values.find((v): v is T => v !== undefined && v !== null);
+}
 
 const name: string = 'translate-lint';
 
@@ -85,65 +128,63 @@ class Cli {
 
     public async runCli(): Promise<void> {
         try {
-            const commandOptions: any = this.cliClient.opts();
+            const commandOptions: ICommandOptions = this.cliClient.opts() as ICommandOptions;
 
             if (commandOptions.init) {
                 await runInit();
                 return;
             }
 
-            const fileOptions: any = await this.getConfig(commandOptions.config);
-            const defaultOptions: any = config.defaultValues;
+            const fileOptions: IFileConfig = await this.getConfig(commandOptions.config);
+            const defaultOptions: IDefaultValues = config.defaultValues;
 
-            const defaultRule = defaultOptions.rule;
-            const fileRule = fileOptions?.rule || {};
-
-            const pick = (...values: any[]) => values.find(v => v !== undefined && v !== null);
+            const defaultRule: IRulesConfig = defaultOptions.rule;
+            const fileRule: Partial<IRulesConfig> = fileOptions?.rule || {};
 
             const rule: IRulesConfig = {
                 zombieKeys: {
-                    type: commandOptions.zombieKeys || fileRule.zombieKeys?.type || defaultRule.zombieKeys.type,
-                    fix: pick(commandOptions.fixZombiesKeys, fileRule.zombieKeys?.fix, defaultRule.zombieKeys.fix),
+                    type: (commandOptions.zombieKeys || fileRule.zombieKeys?.type || defaultRule.zombieKeys.type) as ErrorTypes,
+                    fix: pick(commandOptions.fixZombiesKeys as (boolean | undefined), fileRule.zombieKeys?.fix, defaultRule.zombieKeys.fix) as boolean,
                 },
                 keysOnViews: {
-                    type: commandOptions.keysOnViews || fileRule.keysOnViews?.type || defaultRule.keysOnViews.type,
+                    type: (commandOptions.keysOnViews || fileRule.keysOnViews?.type || defaultRule.keysOnViews.type) as ErrorTypes,
                 },
                 emptyKeys: {
-                    type: commandOptions.emptyKeys || fileRule.emptyKeys?.type || defaultRule.emptyKeys.type,
+                    type: (commandOptions.emptyKeys || fileRule.emptyKeys?.type || defaultRule.emptyKeys.type) as ErrorTypes,
                 },
                 misprintKeys: {
-                    type: commandOptions.misprintKeys || fileRule.misprintKeys?.type || defaultRule.misprintKeys.type,
-                    coefficient: pick(commandOptions.misprintCoefficient, fileRule.misprintKeys?.coefficient, defaultRule.misprintKeys.coefficient),
+                    type: (commandOptions.misprintKeys || fileRule.misprintKeys?.type || defaultRule.misprintKeys.type) as ErrorTypes,
+                    coefficient: pick(commandOptions.misprintCoefficient as (number | undefined), fileRule.misprintKeys?.coefficient, defaultRule.misprintKeys.coefficient) as number,
                     ignored: fileRule.misprintKeys?.ignored || defaultRule.misprintKeys.ignored,
                 },
                 deepSearch: {
-                    type: commandOptions.deepSearch || fileRule.deepSearch?.type || defaultRule.deepSearch.type,
+                    type: (commandOptions.deepSearch || fileRule.deepSearch?.type || defaultRule.deepSearch.type) as ToggleRule,
                 },
-                maxWarning: pick(commandOptions.maxWarning, fileRule.maxWarning, defaultRule.maxWarning),
+                maxWarning: pick(commandOptions.maxWarning as (number | undefined), fileRule.maxWarning, defaultRule.maxWarning) as number,
                 ignoredKeys: fileRule.ignoredKeys || defaultRule.ignoredKeys,
                 customRegExpToFindKeys: fileRule.customRegExpToFindKeys || defaultRule.customRegExpToFindKeys,
                 namespaceKeys: fileRule.namespaceKeys || defaultRule.namespaceKeys,
                 maxKeyDepth: fileRule.maxKeyDepth || defaultRule.maxKeyDepth,
                 duplicateKeys: {
-                    type: commandOptions.duplicateKeys || fileRule.duplicateKeys?.type || defaultRule.duplicateKeys?.type,
+                    type: (commandOptions.duplicateKeys || fileRule.duplicateKeys?.type || defaultRule.duplicateKeys?.type) as ErrorTypes,
                 },
                 missingTranslations: {
-                    type: commandOptions.missingTranslations || fileRule.missingTranslations?.type || defaultRule.missingTranslations?.type,
-                    fix: pick(commandOptions.fixMissingKeys, fileRule.missingTranslations?.fix, defaultRule.missingTranslations?.fix),
+                    type: (commandOptions.missingTranslations || fileRule.missingTranslations?.type || defaultRule.missingTranslations?.type) as ErrorTypes,
+                    fix: pick(commandOptions.fixMissingKeys as (boolean | undefined), fileRule.missingTranslations?.fix, defaultRule.missingTranslations?.fix) as boolean,
                 },
                 keyNamingConvention: {
-                    type: commandOptions.keyNamingConvention || fileRule.keyNamingConvention?.type || defaultRule.keyNamingConvention?.type,
+                    type: (commandOptions.keyNamingConvention || fileRule.keyNamingConvention?.type || defaultRule.keyNamingConvention?.type) as ErrorTypes,
                     format: (commandOptions.keyNamingConventionFormat || fileRule.keyNamingConvention?.format || defaultRule.keyNamingConvention?.format) as NamingConvention,
                 },
             };
 
             const projectPath: string = commandOptions.project || fileOptions?.project || defaultOptions.project;
             const languagePath: string = commandOptions.languages || fileOptions?.languages || defaultOptions.languages;
-            const optionIgnore: string = commandOptions.ignore;
+            const optionIgnore: string | undefined = commandOptions.ignore;
             const fetchSettings: IFetch = fileOptions?.fetch || defaultOptions.fetch;
-            const frameworkPreset: Libraries = commandOptions.frameworkPreset || fileOptions?.frameworkPreset || defaultOptions.frameworkPreset;
+            const frameworkPreset: Libraries = (commandOptions.frameworkPreset || fileOptions?.frameworkPreset || defaultOptions.frameworkPreset) as Libraries;
 
-            const outputFormat: OutputFormat = commandOptions.format || fileOptions?.format || defaultOptions.format;
+            const outputFormat: OutputFormat = (commandOptions.format || fileOptions?.format || defaultOptions.format) as OutputFormat;
 
             if (projectPath && languagePath && !!frameworkPreset) {
                 await this.runLint(projectPath, languagePath, frameworkPreset, rule, optionIgnore, rule.maxWarning, fetchSettings, outputFormat);
@@ -164,8 +205,7 @@ class Cli {
         }
     }
 
-    // tslint:disable-next-line:no-any
-    public async getConfig(configPath: string): Promise<any> {
+    public async getConfig(configPath: string | undefined): Promise<IFileConfig> {
         if (!configPath) {
             return {};
         }
@@ -173,14 +213,16 @@ class Cli {
         const extension: string = path.extname(configPath);
 
         if (extension === '.json') {
-            return parseJsonFile(configPath);
+            return parseJsonFile(configPath) as IFileConfig;
         }
 
         if (extension === '.js') {
             const correctConfigPath: string = PathUtils.resolvePath(configPath);
-            const result: any =  await import(correctConfigPath);
+            const result: { default: IFileConfig } = await import(correctConfigPath) as { default: IFileConfig };
             return result.default;
         }
+
+        return {};
     }
 
     public parse(): void {
@@ -189,7 +231,7 @@ class Cli {
         this.cliClient.parse(process.argv);
     }
 
-    private validate(options: any): boolean {
+    private validate(options: IValidateOptions): boolean {
         if (!options.project) {
             // tslint:disable-next-line: no-console
             console.error(`Missing required argument: --project`);
@@ -226,8 +268,9 @@ class Cli {
             const resultCliModel: ResultCliModel = await validationModel.lint(maxWarning);
             const resultModel: ResultModel = resultCliModel.getResultModel();
 
+            const jsonIndent: number = 2;
             if (format === OutputFormat.json) {
-                process.stdout.write(JSON.stringify(resultModel.toJson(), null, 2) + '\n');
+                process.stdout.write(JSON.stringify(resultModel.toJson(), null, jsonIndent) + '\n');
             } else {
                 resultModel.printResult();
                 resultModel.printSummery();

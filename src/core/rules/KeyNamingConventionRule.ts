@@ -21,9 +21,9 @@ class KeyNamingConventionRule implements IRule {
     }
 
     public check(_viewKeys: KeyModel[], languagesKeys: KeyModel[]): ResultErrorModel[] {
-        const pattern = PATTERNS[this.format];
+        const pattern: RegExp = PATTERNS[this.format];
         return languagesKeys.flatMap((key: KeyModel) => {
-            const invalidSegment = key.name.split('.').find(seg => !pattern.test(seg));
+            const invalidSegment: string | undefined = key.name.split('.').find(seg => !pattern.test(seg));
             if (invalidSegment === undefined) {
                 return [];
             }

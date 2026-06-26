@@ -14,15 +14,16 @@ class MissingTranslationsRule implements IRule {
     }
 
     public check(_viewKeys: KeyModel[], languagesKeys: KeyModel[]): ResultErrorModel[] {
-        if (this.files.length < 2) return [];
+        const minFiles: number = 2;
+        if (this.files.length < minFiles) return [];
 
         const result: ResultErrorModel[] = [];
 
         for (const key of languagesKeys) {
             if (key.languages.length >= this.files.length) continue;
 
-            const presentFiles = new Set(key.languages);
-            const missingFiles = this.files.filter(f => !presentFiles.has(f));
+            const presentFiles: Set<string> = new Set(key.languages);
+            const missingFiles: string[] = this.files.filter(f => !presentFiles.has(f));
 
             for (const missingFile of missingFiles) {
                 result.push(new ResultErrorModel(

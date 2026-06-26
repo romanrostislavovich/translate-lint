@@ -40,7 +40,7 @@ class FileLanguageModel extends FileModel {
             this.files = this.getNormalizeFiles();
             this.keys = this.parseKeys((fileData: string, filePath: string): KeyModel[] => {
                 try {
-                    const fileKeysNames: string[] = this.getLanguageKeys(this.parseFileContent(this.fileData || fileData, filePath));
+                    const fileKeysNames: string[] = this.getLanguageKeys(this.parseFileContent(this.fileData || fileData, filePath) as Record<string, unknown>);
                     return fileKeysNames.map((key: string) => {
                         return new KeyModel(key, [], [filePath]);
                     });
@@ -65,7 +65,7 @@ class FileLanguageModel extends FileModel {
             this.files = this.getNormalizeFiles();
             this.keys = this.parseKeysWithValues((fileData: string, filePath: string): KeyModel[] => {
                 try {
-                    const fileKeysNames: KeyModel[] = this.getLanguageKeysWithValue(this.parseFileContent(this.fileData || fileData, filePath));
+                    const fileKeysNames: KeyModel[] = this.getLanguageKeysWithValue(this.parseFileContent(this.fileData || fileData, filePath) as Record<string, unknown>);
                     return fileKeysNames.map((key: KeyModel) => {
                         key.languages.push(filePath);
                         return key;
@@ -79,7 +79,7 @@ class FileLanguageModel extends FileModel {
     }
 
     private getLanguageKeysWithValue(
-        obj: object,
+        obj: Record<string, unknown>,
         cat: string = '',
         accumulator: KeyModel[] = []
     ): KeyModel[] {
@@ -90,13 +90,11 @@ class FileLanguageModel extends FileModel {
         const objectKeys: string[] = Object.keys(obj);
 
         for (const key of objectKeys) {
-            // tslint:disable-next-line:no-any
-            // @ts-ignore
-            const keyValue: any = obj[key];
+            const keyValue: unknown = obj[key];
             const currentKey: string = cat ? `${cat}.${key}` : key;
 
             if (keyValue !== null && typeof keyValue === 'object' && !Array.isArray(keyValue)) {
-                this.getLanguageKeysWithValue(keyValue, currentKey, accumulator);
+                this.getLanguageKeysWithValue(keyValue as Record<string, unknown>, currentKey, accumulator);
             } else {
                 accumulator.push({
                     name: currentKey,
@@ -111,9 +109,7 @@ class FileLanguageModel extends FileModel {
     }
 
     private getLanguageKeys(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        // tslint:disable-next-line:no-any
-        obj: any,
+        obj: Record<string, unknown>,
         cat: string = '',
         accumulator: string[] = []
     ): string[] {
@@ -124,12 +120,11 @@ class FileLanguageModel extends FileModel {
         const objectKeys: string[] = Object.keys(obj);
 
         for (const key of objectKeys) {
-            // tslint:disable-next-line:no-any
-            const keyValue: any = obj[key];
+            const keyValue: unknown = obj[key];
             const currentKey: string = cat ? `${cat}.${key}` : key;
 
             if (keyValue !== null && typeof keyValue === 'object' && !Array.isArray(keyValue)) {
-                this.getLanguageKeys(keyValue, currentKey, accumulator);
+                this.getLanguageKeys(keyValue as Record<string, unknown>, currentKey, accumulator);
             } else {
                 accumulator.push(currentKey);
             }

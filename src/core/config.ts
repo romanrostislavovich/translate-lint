@@ -13,6 +13,7 @@ const config: IAppConfig = {
             maxWarning:  0,
             ignoredKeys: [],
             customRegExpToFindKeys: [],
+            namespaceKeys: { type: ErrorTypes.disable, delimiter: '.', namespaces: {}, globalNamespaces: [], ignoreInFolders: [] },
             maxKeyDepth: { type: ErrorTypes.disable, depth: 4 },
             duplicateKeys: { type: ErrorTypes.disable },
             missingTranslations: { type: ErrorTypes.disable, fix: false },

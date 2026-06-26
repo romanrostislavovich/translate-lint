@@ -14,7 +14,7 @@ class NamespaceRule implements IRule {
     }
 
     public check(viewKeys: KeyModel[], _languagesKeys: KeyModel[]): ResultErrorModel[] {
-        const { delimiter, namespaces, globalNamespaces, ignoreInFolders } = this.namespaceConfig;
+        const { delimiter, namespaces, globalNamespaces, ignoreInFolders }: INamespaceRule = this.namespaceConfig;
         const result: ResultErrorModel[] = [];
 
         for (const key of viewKeys) {

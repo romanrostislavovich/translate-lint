@@ -1,13 +1,12 @@
 import { isArray } from 'lodash';
-// tslint:disable-next-line:no-require-imports
-const chalk = require('chalk');
+import chalk from 'chalk';
 
 import { ResultFileModel } from './ResultFileModel';
 import { ResultErrorModel } from './ResultErrorModel';
 import { ErrorFlow, ErrorTypes } from '../../enums';
 import { ILogger } from '../../interface';
 import { StylishLogger } from '../StylishLogger';
-import { ResultCliModel } from './ResultCliModel';
+import { ICoverageReport, ResultCliModel } from './ResultCliModel';
 
 class ResultModel extends StylishLogger {
     public cli: ResultCliModel;
@@ -85,16 +84,18 @@ class ResultModel extends StylishLogger {
     }
 
     public printCoverage(): void {
-        const { totalKeys, usedKeys, percentage } = this.cli.coverage;
+        const highThreshold: number = 80;
+        const mediumThreshold: number = 60;
+        const { totalKeys, usedKeys, percentage }: ICoverageReport = this.cli.coverage;
         if (totalKeys === 0) { return; }
-        const color = percentage >= 80 ? chalk.green : percentage >= 60 ? chalk.yellow : chalk.red;
+        const color: chalk.Chalk = percentage >= highThreshold ? chalk.green : percentage >= mediumThreshold ? chalk.yellow : chalk.red;
 
-        console.log(color(`--------------------\nCoverage: ${percentage}% (${usedKeys}/${totalKeys} keys used)\n--------------------\n`));
+        process.stdout.write(color(`--------------------\nCoverage: ${percentage}% (${usedKeys}/${totalKeys} keys used)\n--------------------\n\n`));
     }
 
     public toJson(): object {
-        const errors = this.cli.errors.map((error: ResultErrorModel) => {
-            const msg = error.message();
+        const errors: object[] = this.cli.errors.map((error: ResultErrorModel) => {
+            const msg: string | string[] | null = error.message();
             return {
                 key:       error.value,
                 errorType: error.errorType,

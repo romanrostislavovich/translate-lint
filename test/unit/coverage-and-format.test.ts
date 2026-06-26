@@ -40,18 +40,17 @@ describe('ResultCliModel — coverage', () => {
 // ── ResultModel.printCoverage() ───────────────────────────────────────────
 
 describe('ResultModel.printCoverage()', () => {
-    let logStub: sinon.SinonStub;
+    let writeStub: sinon.SinonStub;
 
-    beforeEach(() => { logStub = sinon.stub(console, 'log'); });
-    afterEach(() => { logStub.restore(); });
+    beforeEach(() => { writeStub = sinon.stub(process.stdout, 'write'); });
+    afterEach(() => { writeStub.restore(); });
 
     it('should print coverage when totalKeys > 0', () => {
         const cli   = new ResultCliModel([], 0, makeCoverage({ percentage: 80 }));
         const model = new ResultModel(cli);
         model.printCoverage();
-        assert.isTrue(logStub.called);
-        const printed: string = logStub.firstCall.args[0];
-        console.log(logStub.firstCall.args[0]);
+        assert.isTrue(writeStub.called);
+        const printed: string = writeStub.firstCall.args[0] as string;
         assert.include(printed, '80%');
         assert.include(printed, '80/100');
     });
@@ -60,23 +59,23 @@ describe('ResultModel.printCoverage()', () => {
         const cli   = new ResultCliModel([], 0, makeCoverage({ totalKeys: 0 }));
         const model = new ResultModel(cli);
         model.printCoverage();
-        assert.isFalse(logStub.called);
+        assert.isFalse(writeStub.called);
     });
 
     it('should print 100% coverage correctly', () => {
         const cli   = new ResultCliModel([], 0, makeCoverage({ usedKeys: 100, unusedKeys: 0, percentage: 100 }));
         const model = new ResultModel(cli);
         model.printCoverage();
-        assert.isTrue(logStub.called);
-        assert.include(logStub.firstCall.args[0], '100%');
+        assert.isTrue(writeStub.called);
+        assert.include(writeStub.firstCall.args[0] as string, '100%');
     });
 
     it('should print coverage for low percentage (< 60)', () => {
         const cli   = new ResultCliModel([], 0, makeCoverage({ usedKeys: 40, unusedKeys: 60, percentage: 40 }));
         const model = new ResultModel(cli);
         model.printCoverage();
-        assert.isTrue(logStub.called);
-        assert.include(logStub.firstCall.args[0], '40%');
+        assert.isTrue(writeStub.called);
+        assert.include(writeStub.firstCall.args[0] as string, '40%');
     });
 });
 

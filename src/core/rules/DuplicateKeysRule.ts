@@ -4,19 +4,19 @@ import { IRule } from '../interface';
 import { ErrorFlow, ErrorTypes } from '../enums';
 import { ResultErrorModel, KeyModel } from '../models';
 
-interface DuplicateMatch {
+interface IDuplicateMatch {
     key: string;
     line: number;
 }
 
-function findDuplicatesInContent(content: string): DuplicateMatch[] {
-    const results: DuplicateMatch[] = [];
-    const lines = content.split('\n');
-    const seenByIndent = new Map<number, Set<string>>();
+function findDuplicatesInContent(content: string): IDuplicateMatch[] {
+    const results: IDuplicateMatch[] = [];
+    const lines: string[] = content.split('\n');
+    const seenByIndent: Map<number, Set<string>> = new Map<number, Set<string>>();
 
-    for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        const indent = line.search(/\S/);
+    for (let i: number = 0; i < lines.length; i++) {
+        const line: string = lines[i];
+        const indent: number = line.search(/\S/);
         if (indent === -1) continue;
 
         for (const level of seenByIndent.keys()) {
@@ -24,12 +24,13 @@ function findDuplicatesInContent(content: string): DuplicateMatch[] {
         }
 
         // Matches both JSON ("key":) and YAML (key:) key patterns
-        const match = line.match(/^\s*(?:"((?:[^"\\]|\\.)*)"|([\w.-]+))\s*:/);
+        const match: RegExpMatchArray | null = line.match(/^\s*(?:"((?:[^"\\]|\\.)*)"|([\w.-]+))\s*:/);
         if (!match) continue;
 
-        const key = match[1] ?? match[2];
+        const [, firstGroup, secondGroup]: Array<string | undefined> = match;
+        const key: string = (firstGroup ?? secondGroup)!;
         if (!seenByIndent.has(indent)) seenByIndent.set(indent, new Set());
-        const seen = seenByIndent.get(indent)!;
+        const seen: Set<string> = seenByIndent.get(indent)!;
 
         if (seen.has(key)) {
             results.push({ key, line: i + 1 });
@@ -62,7 +63,7 @@ class DuplicateKeysRule implements IRule {
                 continue;
             }
 
-            const ext = path.extname(filePath).toLowerCase();
+            const ext: string = path.extname(filePath).toLowerCase();
             if (ext !== '.json' && ext !== '.yaml' && ext !== '.yml') continue;
 
             for (const { key, line } of findDuplicatesInContent(content)) {

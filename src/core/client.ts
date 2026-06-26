@@ -86,7 +86,7 @@ class TranslateLint {
         const viewKeyNames: Set<string> = new Set(views.keys.map((k: KeyModel) => k.name));
         const usedKeys: number = languagesKeys.keys.filter((k: KeyModel) => viewKeyNames.has(k.name)).length;
         const percentage: number = totalKeys > 0
-            ? Math.round((usedKeys / totalKeys) * 10000) / 100
+            ? Number((usedKeys / totalKeys * 100).toFixed(2))
             : 0;
         const coverage: ICoverageReport = { totalKeys, usedKeys, unusedKeys: totalKeys - usedKeys, percentage };
 
@@ -225,10 +225,10 @@ class TranslateLint {
             result.push(...ruleInstance.check([], languagesKeys.keys));
 
             if (String(rules.missingTranslations.fix).toLowerCase() === 'true') {
-                const missingByFile = new Map<string, string[]>();
+                const missingByFile: Map<string, string[]> = new Map<string, string[]>();
                 result.forEach((error) => {
                     if (error.errorFlow === ErrorFlow.missingTranslations) {
-                        const keys = missingByFile.get(error.currentPath) ?? [];
+                        const keys: string[] = missingByFile.get(error.currentPath) ?? [];
                         keys.push(error.value);
                         missingByFile.set(error.currentPath, keys);
                     }
@@ -237,7 +237,7 @@ class TranslateLint {
                 missingByFile.forEach((keys, filePath) => {
                     if (!filePath.endsWith('.json')) return;
                     try {
-                        const jsonData: any = parseJsonFile(filePath);
+                        const jsonData: Record<string, unknown> = parseJsonFile(filePath) as Record<string, unknown>;
                         keys.forEach(keyName => setMissingKey(jsonData, keyName));
                         saveJsonFile(jsonData, filePath);
                     } catch { /* skip unreadable files */ }
@@ -260,7 +260,7 @@ class TranslateLint {
             });
 
             filesAndKeysMap.forEach((languageFile: FileLanguageModel) => {
-                const jsonData: any = parseJsonFile(languageFile.path);
+                const jsonData: Record<string, unknown> = parseJsonFile(languageFile.path) as Record<string, unknown>;
 
                 languageFile.keys.forEach((k) => {
                     delete jsonData[k.name];

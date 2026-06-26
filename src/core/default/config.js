@@ -34,7 +34,7 @@ const config = {
         },
         maxKeyDepth: {
             type: "disable",
-            depth: 3,
+            depth: 4,
         },
         duplicateKeys: {
             type: "disable",

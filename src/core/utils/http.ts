@@ -6,6 +6,7 @@ export class Http {
     public static async get(url: string, fetchSettings?: IFetch): Promise<any> {
         if (!!fetchSettings?.get) {
             const space: number  = 4;
+            // tslint:disable-next-line:no-any
             const fetchResult: any = await fetchSettings.get();
             return JSON.stringify(fetchResult, null, space);
         }
@@ -17,6 +18,7 @@ export class Http {
             }
         }).then(res => res.json()).then(res => {
             const space: number  = 4;
+            // tslint:disable-next-line:no-any
             const result: any = fetchSettings?.responseQuery ? res[fetchSettings.responseQuery] : res;
             return  JSON.stringify(result, null, space);
         });

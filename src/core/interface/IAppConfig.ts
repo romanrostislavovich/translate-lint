@@ -35,4 +35,4 @@ interface IAppConfig {
     defaultValues: IDefaultValues;
 }
 
-export { IAppConfig, IFetch, INamespaceRule, IMaxKeyDepthRule };
+export { IAppConfig, IDefaultValues, IFetch, INamespaceRule, IMaxKeyDepthRule };
