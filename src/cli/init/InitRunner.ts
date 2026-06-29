@@ -3,45 +3,13 @@ import fs from 'fs';
 import path from 'path';
 import chalk from 'chalk';
 import { config } from '../../core/config';
-
-const FRAMEWORKS: string[] = [
-    'angular-ngx-translate',
-    'react-i18next',
-    'react-intl',
-    'lingui-js',
-    'next-intl',
-    'vue-i18n',
-    'i18next-vue',
-    'fluent-vue',
-];
-
-const DEFAULT_PROJECT_PATHS: Record<string, string> = {
-    'angular-ngx-translate': './src/app/**/*.{html,ts}',
-    'react-i18next':         './src/**/*.{tsx,ts,jsx,js}',
-    'react-intl':            './src/**/*.{tsx,ts,jsx,js}',
-    'lingui-js':             './src/**/*.{tsx,ts,jsx,js}',
-    'next-intl':             './src/**/*.{tsx,ts,jsx,js}',
-    'vue-i18n':              './src/**/*.{vue,ts,js}',
-    'i18next-vue':           './src/**/*.{vue,ts,js}',
-    'fluent-vue':            './src/**/*.{vue,ts,js}',
-};
-
-const DEFAULT_LANG_PATHS: Record<string, string> = {
-    'angular-ngx-translate': './src/assets/i18n/*.json',
-    'react-i18next':         './public/locales/**/*.json',
-    'react-intl':            './src/locales/*.json',
-    'lingui-js':             './src/locales/*.json',
-    'next-intl':             './messages/*.json',
-    'vue-i18n':              './src/locales/*.json',
-    'i18next-vue':           './src/locales/*.json',
-    'fluent-vue':            './src/locales/*.json',
-};
+import {DEFAULT_LANG_PATHS, DEFAULT_PROJECT_PATHS, FRAMEWORKS, Libraries} from '../../libraries';
 
 function ask(rl: readline.Interface, question: string): Promise<string> {
     return new Promise(resolve => rl.question(question, resolve));
 }
 
-function generateJsonConfig(framework: string, project: string, languages: string): string {
+function generateJsonConfig(framework: Libraries, project: string, languages: string): string {
     const d: typeof config.defaultValues = config.defaultValues;
     const cfg: object = {
         frameworkPreset: framework,
@@ -59,7 +27,7 @@ function generateJsonConfig(framework: string, project: string, languages: strin
     return JSON.stringify(cfg, null, jsonIndent) + '\n';
 }
 
-function generateJsConfig(framework: string, project: string, languages: string): string {
+function generateJsConfig(framework: Libraries, project: string, languages: string): string {
     const d: typeof config.defaultValues = config.defaultValues;
     const r: typeof d.rule = d.rule;
     const ns: typeof r.namespaceKeys = r.namespaceKeys!;
@@ -122,7 +90,7 @@ async function runInit(): Promise<void> {
 
     const frameworkAnswer: string = await ask(rl, `\n${chalk.bold('Select framework preset')} (1–${FRAMEWORKS.length}) ${chalk.gray('[1]')}: `);
     const frameworkIndex: number = Number(frameworkAnswer.trim() || '1') - 1;
-    const framework : string = FRAMEWORKS[Math.max(0, Math.min(frameworkIndex, FRAMEWORKS.length - 1))];
+    const framework: Libraries = FRAMEWORKS[Math.max(0, Math.min(frameworkIndex, FRAMEWORKS.length - 1))];
 
     const defaultProject: string = DEFAULT_PROJECT_PATHS[framework];
     const projectAnswer: string = await ask(rl, `${chalk.bold('Project path')} ${chalk.gray(`[${defaultProject}]`)}: `);

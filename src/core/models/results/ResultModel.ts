@@ -93,7 +93,7 @@ class ResultModel extends StylishLogger {
         process.stdout.write(color(`--------------------\nCoverage: ${percentage}% (${usedKeys}/${totalKeys} keys used)\n--------------------\n\n`));
     }
 
-    public toJson(): object {
+    public toJson(elapsed?: number): object {
         const errors: object[] = this.cli.errors.map((error: ResultErrorModel) => {
             const msg: string | string[] | null = error.message();
             return {
@@ -105,7 +105,7 @@ class ResultModel extends StylishLogger {
             };
         });
 
-        return {
+        const base: object = {
             errors,
             summary: {
                 total:    this.cli.countWarnings() + this.cli.countErrors(),
@@ -114,6 +114,69 @@ class ResultModel extends StylishLogger {
             },
             coverage: this.cli.coverage,
         };
+
+        if (elapsed !== undefined) {
+            return {
+                ...base,
+                stats: {
+                    viewFiles:     this.cli.viewFiles,
+                    languageFiles: this.cli.languageFiles,
+                    elapsedMs:     elapsed,
+                },
+            };
+        }
+
+        return base;
+    }
+
+    public toJunit(): string {
+        const byFile: Map<string, ResultErrorModel[]> = new Map<string, ResultErrorModel[]>();
+        for (const error of this.cli.errors) {
+            const list: ResultErrorModel[] = byFile.get(error.currentPath) ?? [];
+            list.push(error);
+            byFile.set(error.currentPath, list);
+        }
+
+        const lines: string[] = ['<?xml version="1.0" encoding="UTF-8"?>'];
+        lines.push(`<testsuites name="translate-lint" tests="${this.cli.errors.length}" failures="${this.cli.countErrors()}" warnings="${this.cli.countWarnings()}">`);
+
+        for (const [file, fileErrors] of byFile) {
+            lines.push(`  <testsuite name="${this.escapeXml(file)}" tests="${fileErrors.length}" failures="${fileErrors.length}">`);
+            for (const error of fileErrors) {
+                const msg: string | string[] | null = error.message();
+                const msgStr: string = isArray(msg) ? (msg as string[]).join('; ') : (msg ?? '');
+                lines.push(`    <testcase name="${this.escapeXml(error.value)}" classname="${this.escapeXml(file)}">`);
+                lines.push(`      <failure message="${this.escapeXml(msgStr)}" type="${error.errorType}"/>`);
+                lines.push('    </testcase>');
+            }
+            lines.push('  </testsuite>');
+        }
+
+        lines.push('</testsuites>');
+        return lines.join('\n') + '\n';
+    }
+
+    public printStats(elapsed: number): void {
+        const msPerSecond: number = 1000;
+        const timeDecimals: number = 3;
+        const lines: string[] = [
+            '\n--------------------',
+            'Stats:',
+            `View files:       ${this.cli.viewFiles}`,
+            `Language files:   ${this.cli.languageFiles}`,
+            `Total keys:       ${this.cli.coverage.totalKeys}`,
+            `Time:             ${(elapsed / msPerSecond).toFixed(timeDecimals)}s`,
+            '--------------------\n',
+        ];
+        process.stdout.write(lines.join('\n'));
+    }
+
+    private escapeXml(str: string): string {
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
     }
 }
 

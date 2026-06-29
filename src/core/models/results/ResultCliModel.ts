@@ -17,6 +17,8 @@ class ResultCliModel {
     public errors: ResultErrorModel[] = [];
     public maxCountWarning: number = 0;
     public coverage: ICoverageReport;
+    public viewFiles: number = 0;
+    public languageFiles: number = 0;
 
     private _warningsCount: number = 0;
     private _errorsCount: number = 0;

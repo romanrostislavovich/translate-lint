@@ -46,6 +46,7 @@ interface ICommandOptions {
     keyNamingConvention?: string;
     keyNamingConventionFormat?: string;
     format?: string;
+    stats?: boolean;
 }
 
 interface IFileConfig {
@@ -185,9 +186,10 @@ class Cli {
             const frameworkPreset: Libraries = (commandOptions.frameworkPreset || fileOptions?.frameworkPreset || defaultOptions.frameworkPreset) as Libraries;
 
             const outputFormat: OutputFormat = (commandOptions.format || fileOptions?.format || defaultOptions.format) as OutputFormat;
+            const showStats: boolean = !!commandOptions.stats;
 
             if (projectPath && languagePath && !!frameworkPreset) {
-                await this.runLint(projectPath, languagePath, frameworkPreset, rule, optionIgnore, rule.maxWarning, fetchSettings, outputFormat);
+                await this.runLint(projectPath, languagePath, frameworkPreset, rule, optionIgnore, rule.maxWarning, fetchSettings, outputFormat, showStats);
             } else {
                 const cliHasError: boolean = this.validate({ project: projectPath, languages: languagePath, frameworkPreset });
                 if (cliHasError) {
@@ -262,19 +264,28 @@ class Cli {
         maxWarning: number = 0,
         fetchSettings?: IFetch,
         format: OutputFormat = OutputFormat.stylish,
+        showStats: boolean = false,
     ): Promise<void> {
+            const startTime: number = Date.now();
             const regexpList: string[] | undefined = libraries.get(frameworkPreset);
             const validationModel: TranslateLint = new TranslateLint(project, languages, ignore, ruleConfig, fetchSettings, regexpList);
             const resultCliModel: ResultCliModel = await validationModel.lint(maxWarning);
+            const elapsed: number = Date.now() - startTime;
             const resultModel: ResultModel = resultCliModel.getResultModel();
 
             const jsonIndent: number = 2;
             if (format === OutputFormat.json) {
-                process.stdout.write(JSON.stringify(resultModel.toJson(), null, jsonIndent) + '\n');
+                process.stdout.write(JSON.stringify(resultModel.toJson(showStats ? elapsed : undefined), null, jsonIndent) + '\n');
+            } else if (format === OutputFormat.junit) {
+                process.stdout.write(resultModel.toJunit());
             } else {
                 resultModel.printResult();
                 resultModel.printSummery();
                 resultModel.printCoverage();
+            }
+
+            if (showStats && format !== OutputFormat.json) {
+                resultModel.printStats(elapsed);
             }
 
             process.exitCode = resultCliModel.exitCode();

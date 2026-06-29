@@ -124,8 +124,10 @@ Options:
           Auto-add missing keys to all language files with an empty value
   --ft, --format [enum]
           Output format for lint results
-          Possible Values: <stylish|json>
+          Possible Values: <stylish|json|junit>
            (default: "stylish")
+  --stats [boolean]
+          Print file count, key count, and elapsed time after lint
   --knc, --keyNamingConvention [enum]
           Enforce a naming convention for translation key segments
           Possible Values: <disable|warning|error>
@@ -153,13 +155,19 @@ Examples:
 
 #### Output format
 
-By default, results are printed in a human-readable stylish format. Pass `--format json` (or `--ft json`) to get machine-readable JSON output — useful for CI pipelines or tooling integration:
+Three formats are available via `--format` (`--ft`):
+
+| Format | Description |
+|--------|-------------|
+| `stylish` | Human-readable colored output (default) |
+| `json` | Machine-readable JSON — ideal for CI artifacts |
+| `junit` | JUnit XML — consumed by GitHub Actions, Jenkins, GitLab CI test reporters |
+
+**JSON format:**
 
 ```bash
 translate-lint -p './src/**/*.ts' -l './locales/*.json' -f react-i18next --format json
 ```
-
-JSON output structure:
 
 ```json
 {
@@ -186,7 +194,57 @@ JSON output structure:
 }
 ```
 
-> The version banner is written to **stderr** so stdout remains clean JSON.
+**JUnit XML format** — for CI test report integration:
+
+```bash
+translate-lint -p './src/**/*.ts' -l './locales/*.json' -f react-i18next --format junit > results.xml
+```
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="translate-lint" tests="1" failures="1" warnings="0">
+  <testsuite name="src/app/login.ts" tests="1" failures="1">
+    <testcase name="AUTH.LOGIN" classname="src/app/login.ts">
+      <failure message="Key: 'AUTH.LOGIN' doesn't exist in project" type="error"/>
+    </testcase>
+  </testsuite>
+</testsuites>
+```
+
+> The version banner is written to **stderr** so stdout remains clean JSON/XML.
+
+#### Stats output
+
+Pass `--stats` to print a summary of files scanned, total keys, and elapsed time at the end of the run:
+
+```bash
+translate-lint -p './src/**/*.ts' -l './locales/*.json' -f react-i18next --stats
+```
+
+```
+--------------------
+Stats:
+  View files:       12
+  Language files:   3
+  Total keys:       120
+  Time:             0.342s
+--------------------
+```
+
+`--stats` also works with `--format json` — it adds a `stats` block to the JSON output:
+
+```json
+{
+  "errors": [],
+  "summary": { "total": 0, "errors": 0, "warnings": 0 },
+  "coverage": { "totalKeys": 120, "usedKeys": 105, "unusedKeys": 15, "percentage": 87.5 },
+  "stats": {
+    "viewFiles": 12,
+    "languageFiles": 3,
+    "elapsedMs": 342
+  }
+}
+```
 
 #### Coverage report
 

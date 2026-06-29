@@ -29,4 +29,37 @@ const libraries:  Map<Libraries, string[]> = new Map<Libraries, string[]>([
     [Libraries.FluentVue, [...fluentVueRegEx]],
 ]);
 
-export {Libraries, libraries};
+const FRAMEWORKS: Libraries[] = [
+    Libraries.AngularNgxTranslate,
+    Libraries.ReactI18next,
+    Libraries.ReactIntl,
+    Libraries.LinguiJs,
+    Libraries.NextIntl,
+    Libraries.VueI18n,
+    Libraries.I18nextVue,
+    Libraries.FluentVue,
+];
+
+const DEFAULT_PROJECT_PATHS: Record<Libraries, string> = {
+    [Libraries.AngularNgxTranslate]: './src/app/**/*.{html,ts}',
+    [Libraries.ReactI18next]:        './src/**/*.{tsx,ts,jsx,js}',
+    [Libraries.ReactIntl]:           './src/**/*.{tsx,ts,jsx,js}',
+    [Libraries.LinguiJs]:            './src/**/*.{tsx,ts,jsx,js}',
+    [Libraries.NextIntl]:            './src/**/*.{tsx,ts,jsx,js}',
+    [Libraries.VueI18n]:             './src/**/*.{vue,ts,js}',
+    [Libraries.I18nextVue]:          './src/**/*.{vue,ts,js}',
+    [Libraries.FluentVue]:           './src/**/*.{vue,ts,js}',
+};
+
+const DEFAULT_LANG_PATHS: Record<Libraries, string> = {
+    [Libraries.AngularNgxTranslate]: './src/assets/i18n/*.json',
+    [Libraries.ReactI18next]:        './public/locales/**/*.json',
+    [Libraries.ReactIntl]:           './src/locales/*.json',
+    [Libraries.LinguiJs]:            './src/locales/*.json',
+    [Libraries.NextIntl]:            './messages/*.json',
+    [Libraries.VueI18n]:             './src/locales/*.json',
+    [Libraries.I18nextVue]:          './src/locales/*.json',
+    [Libraries.FluentVue]:           './src/locales/*.json',
+};
+
+export {Libraries, libraries, DEFAULT_LANG_PATHS, DEFAULT_PROJECT_PATHS, FRAMEWORKS};

@@ -90,7 +90,10 @@ class TranslateLint {
             : 0;
         const coverage: ICoverageReport = { totalKeys, usedKeys, unusedKeys: totalKeys - usedKeys, percentage };
 
-        return new ResultCliModel(errors, maxWarning, coverage);
+        const result: ResultCliModel = new ResultCliModel(errors, maxWarning, coverage);
+        result.viewFiles = views.files.length;
+        result.languageFiles = languagesKeys.files.length;
+        return result;
     }
 
     public getLanguages(): LanguagesModel[] {

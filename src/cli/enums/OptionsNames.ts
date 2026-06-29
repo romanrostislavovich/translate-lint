@@ -21,6 +21,7 @@ enum OptionsLongNames {
     keyNamingConvention = 'keyNamingConvention',
     keyNamingConventionFormat = 'keyNamingConventionFormat',
     format = 'format',
+    stats = 'stats',
 }
 
 enum OptionsShortNames {

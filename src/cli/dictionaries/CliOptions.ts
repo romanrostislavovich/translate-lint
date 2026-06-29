@@ -251,7 +251,15 @@ const cliOptions: OptionModel[] = [
         values: [
             OutputFormat.stylish,
             OutputFormat.json,
+            OutputFormat.junit,
         ],
+    }),
+    new OptionModel({
+        longName: OptionsLongNames.stats,
+        required: false,
+        type: ArgumentTypes.boolean,
+        description: `Print file count, key count, and elapsed time after lint`,
+        additionalDescription: ``,
     }),
     new OptionModel({
         longName: OptionsLongNames.init,
