@@ -6,6 +6,10 @@ import {reactIntlRegEx} from "./react-intl";
 import {vueI18nRegEx} from "./vue-i18n";
 import {i18nextVueRegEx} from "./i18next-vue";
 import {fluentVueRegEx} from "./fluent-vue";
+import {translocoRegEx} from "./transloco";
+import {nextI18nextRegEx} from "./next-i18next";
+import {nuxtI18nRegEx} from "./nuxtjs-i18n";
+import {svelteI18nRegEx} from "./svelte-i18n";
 
 const enum Libraries {
     AngularNgxTranslate = 'angular-ngx-translate',
@@ -16,6 +20,10 @@ const enum Libraries {
     VueI18n = 'vue-i18n',
     I18nextVue = 'i18next-vue',
     FluentVue = 'fluent-vue',
+    Transloco = 'transloco',
+    NextI18next = 'next-i18next',
+    NuxtI18n = 'nuxtjs-i18n',
+    SvelteI18n = 'svelte-i18n',
 }
 
 const libraries:  Map<Libraries, string[]> = new Map<Libraries, string[]>([
@@ -27,6 +35,10 @@ const libraries:  Map<Libraries, string[]> = new Map<Libraries, string[]>([
     [Libraries.VueI18n, [...vueI18nRegEx]],
     [Libraries.I18nextVue, [...i18nextVueRegEx]],
     [Libraries.FluentVue, [...fluentVueRegEx]],
+    [Libraries.Transloco, [...translocoRegEx]],
+    [Libraries.NextI18next, [...nextI18nextRegEx]],
+    [Libraries.NuxtI18n, [...nuxtI18nRegEx]],
+    [Libraries.SvelteI18n, [...svelteI18nRegEx]],
 ]);
 
 const FRAMEWORKS: Libraries[] = [
@@ -38,6 +50,10 @@ const FRAMEWORKS: Libraries[] = [
     Libraries.VueI18n,
     Libraries.I18nextVue,
     Libraries.FluentVue,
+    Libraries.Transloco,
+    Libraries.NextI18next,
+    Libraries.NuxtI18n,
+    Libraries.SvelteI18n,
 ];
 
 const DEFAULT_PROJECT_PATHS: Record<Libraries, string> = {
@@ -49,6 +65,10 @@ const DEFAULT_PROJECT_PATHS: Record<Libraries, string> = {
     [Libraries.VueI18n]:             './src/**/*.{vue,ts,js}',
     [Libraries.I18nextVue]:          './src/**/*.{vue,ts,js}',
     [Libraries.FluentVue]:           './src/**/*.{vue,ts,js}',
+    [Libraries.Transloco]:           './src/app/**/*.{html,ts}',
+    [Libraries.NextI18next]:         './src/**/*.{tsx,ts,jsx,js}',
+    [Libraries.NuxtI18n]:            './pages/**/*.{vue,ts,js}',
+    [Libraries.SvelteI18n]:          './src/**/*.{svelte,ts,js}',
 };
 
 const DEFAULT_LANG_PATHS: Record<Libraries, string> = {
@@ -60,6 +80,10 @@ const DEFAULT_LANG_PATHS: Record<Libraries, string> = {
     [Libraries.VueI18n]:             './src/locales/*.json',
     [Libraries.I18nextVue]:          './src/locales/*.json',
     [Libraries.FluentVue]:           './src/locales/*.json',
+    [Libraries.Transloco]:           './src/assets/i18n/*.json',
+    [Libraries.NextI18next]:         './public/locales/**/*.json',
+    [Libraries.NuxtI18n]:            './locales/*.json',
+    [Libraries.SvelteI18n]:          './src/locales/*.json',
 };
 
 export {Libraries, libraries, DEFAULT_LANG_PATHS, DEFAULT_PROJECT_PATHS, FRAMEWORKS};

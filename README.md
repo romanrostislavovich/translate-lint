@@ -35,13 +35,17 @@ which should exist in all languages files.
 | Library                                                          | Preset                  | Framework |
 |------------------------------------------------------------------|-------------------------|-----------|
 | [ngx-translate][ngx-translate]                                   | `angular-ngx-translate` | Angular   |
+| [transloco](https://jsverse.github.io/transloco/)                | `transloco`             | Angular   |
 | [react-i18next](https://www.npmjs.com/package/react-i18next)     | `react-i18next`         | React     |
 | [react-intl](https://www.npmjs.com/package/react-intl)           | `react-intl`            | React     |
 | [lingui](https://github.com/lingui/js-lingui)                    | `lingui-js`             | React     |
 | [next-intl](https://www.npmjs.com/package/next-intl)             | `next-intl`             | Next.js   |
+| [next-i18next](https://www.npmjs.com/package/next-i18next)       | `next-i18next`          | Next.js   |
 | [vue-i18n](https://vue-i18n.intlify.dev/)                        | `vue-i18n`              | Vue       |
 | [i18next-vue](https://www.npmjs.com/package/i18next-vue)         | `i18next-vue`           | Vue       |
 | [fluent-vue](https://fluent-vue.demivan.me/)                     | `fluent-vue`            | Vue       |
+| [@nuxtjs/i18n](https://i18n.nuxtjs.org/)                         | `nuxtjs-i18n`           | Nuxt.js   |
+| [svelte-i18n](https://www.npmjs.com/package/svelte-i18n)         | `svelte-i18n`           | Svelte    |
 
 ## Installation
 
@@ -64,7 +68,7 @@ Simple tools for checking translate keys in the whole app that uses regexp. Supp
 Options:
  -f, --frameworkPreset [enum] (required)   
           Preset of frameworks and libraries
-          Possible Values: <angular-ngx-translate|lingui-js|next-intl|react-intl|react-i18next|vue-i18n|i18next-vue|fluent-vue>
+          Possible Values: <angular-ngx-translate|transloco|lingui-js|next-intl|next-i18next|react-intl|react-i18next|vue-i18n|i18next-vue|fluent-vue|nuxtjs-i18n|svelte-i18n>
   -p, --project [glob]                   
           The path to project folder
           Possible Values: <relative path|absolute path>
@@ -694,10 +698,14 @@ The `namespaceKeys` rule enforces that translation keys belonging to a specific 
 | Library | Delimiter | Example in template |
 |---|---|---|
 | ngx-translate | `.` | `'bonus.TITLE' \| translate` |
+| transloco | `.` | `'bonus.TITLE' \| transloco` |
 | react-i18next | `:` | `t('bonus:TITLE')` |
+| next-i18next | `:` | `t('bonus:TITLE')` |
 | react-intl | `.` | `<FormattedMessage id="bonus.TITLE" />` |
 | lingui | `.` | `` t`bonus.TITLE` `` |
 | next-intl | `.` | `t('bonus.TITLE')` |
+| @nuxtjs/i18n | `.` | `$t('bonus.TITLE')` |
+| svelte-i18n | `.` | `$_('bonus.TITLE')` |
 
 **Error message example:**
 ```

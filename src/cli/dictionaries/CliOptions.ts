@@ -22,6 +22,10 @@ const cliOptions: OptionModel[] = [
             Libraries.VueI18n,
             Libraries.FluentVue,
             Libraries.I18nextVue,
+            Libraries.Transloco,
+            Libraries.NextI18next,
+            Libraries.NuxtI18n,
+            Libraries.SvelteI18n,
         ]
     }),
     new OptionModel({

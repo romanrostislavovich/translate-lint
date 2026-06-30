@@ -1,7 +1,7 @@
 {
     "author": "Raman Lauryniuk <romanrostislavovich@gmail.com>",
     "name": "translate-lint",
-    "version": "1.5.0",
+    "version": "1.6.0",
     "description": "Simple tools for checking translate keys in the whole app that uses regexp. Support for popular libraries and frameworks\n",
     "license": "MIT",
     "repository": "https://github.com/romanrostislavovich/translate-lint.git",
@@ -41,7 +41,19 @@
         "translate-lint",
         "validator",
         "linting",
-        "cli"
+        "cli",
+        "react-i18next",
+        "react-intl",
+        "ngx-translate-lint",
+        "lingui",
+        "next-intl",
+        "vue-i18n",
+        "i18next-vue",
+        "fluent-vue",
+        "transloco",
+        "next-i18next",
+        "@nuxtjs/i18n",
+        "svelte-i18n"
     ],
     "publishConfig": {
         "registry": "https://registry.npmjs.org/",
